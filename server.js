@@ -1,7 +1,27 @@
 const express = require('express');
 const app = express();
 const cookieParser = require('cookie-parser');
+const dbConnection = require('./configs/connectDB');
+const cors = require('cors');
+const mongoose = require('mongoose');
 require('dotenv').config();
+
+dbConnection.connectDB();
+const corsOptions = ['*', 'https://example.com'];
+const corsConfig = {
+    credentials: true,
+    origin: (origin, callback) => {
+        if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error("Blocked by me"));
+        }
+    }
+};
+
+app.use(cors(corsConfig));
+
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -14,12 +34,16 @@ app.get('/', (req, res) => {
     )
 });
 
-app.use('/',require('./routes/posts'));
-app.use('/',require('./routes/register'));
-app.use('/',require('./routes/login'));
-app.use('/',require('./routes/logOut'));
-app.use('/',require('./routes/token'));
+app.use('/', require('./routes/posts'));
+app.use('/', require('./routes/register'));
+app.use('/', require('./routes/login'));
+app.use('/', require('./routes/logOut'));
+app.use('/', require('./routes/token'));
 
-app.listen(5000, (err) => {
-    (err) ? console.log(err) : console.log('working server');
-})
+mongoose.connection.once(
+    'open',  () => {
+        app.listen(5000, (req, res) => {
+            console.log('working server');
+        })
+    }
+)
