@@ -1,13 +1,15 @@
 const bcrypt = require('bcrypt');
-const fs = require('fs');
 const jwt = require('jsonwebtoken');
+const Users = require('../models/Users');
 require('dotenv').config();
-const usersDB = {
+
+/* const fs = require('fs'); */
+/* const usersDB = {
     users: require('../models/users.json'),
     setUsers: function (data) {
         this.data = data;
     }
-}
+} */
 
 const handleLogin = async (req, res) => {
 
@@ -17,7 +19,7 @@ const handleLogin = async (req, res) => {
         return res.status(403).json({ "message": "empty fields" });
     }
 
-    const foundUser = await usersDB.users.find(person => person.username === username);
+    const foundUser = await Users.findOne({ username: username }).exec();
 
     if (!foundUser) {
         return res.status(403).json(
@@ -37,28 +39,29 @@ const handleLogin = async (req, res) => {
         )
     }
 
-    const refreshToken =  jwt.sign(
-        {"username" : username},
+    const refreshToken = jwt.sign(
+        { "username": username },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn : '3d'
+            expiresIn: '3d'
         }
-    )
+    );
 
     foundUser.refreshToken = refreshToken;
-    
-    const otherUsers = usersDB.users.filter(person => person.username !== username);
+    await foundUser.save();
+
+    /* const otherUsers = usersDB.users.filter(person => person.username !== username);
 
     usersDB.setUsers([])
-    fs.writeFileSync('././models/users.json', JSON.stringify(usersDB.users));
+    fs.writeFileSync('././models/users.json', JSON.stringify(usersDB.users)); */
 
     return res.status(200).cookie(
         'jwt',
         refreshToken,
-        { httpOnly : true, expiresIn : '60*60*1000s' }
+        { httpOnly: true, expiresIn: '60*60*1000s' }
     ).json(
         {
-            "refreshToken" : refreshToken,
+            "refreshToken": refreshToken,
             "message": "logged in"
         }
     )
