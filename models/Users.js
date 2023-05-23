@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const userSchema = new Schema(
     {
+        userID: {
+            type: String,
+            required: true
+        },
         username: {
             type: String,
             required: true
@@ -18,9 +22,9 @@ const userSchema = new Schema(
             type: String,
             required: true
         },
-        refreshToken : {
+        refreshToken: {
             type: String,
-            default : ""
+            default: ""
         }
     }
 )

@@ -20,6 +20,7 @@ const handleLogin = async (req, res) => {
     }
 
     const foundUser = await Users.findOne({ username: username }).exec();
+    console.log(foundUser);
 
     if (!foundUser) {
         return res.status(403).json(
@@ -39,8 +40,9 @@ const handleLogin = async (req, res) => {
         )
     }
 
+    console.log(foundUser.userID, " from loginController")
     const refreshToken = jwt.sign(
-        { "username": username },
+        { "username": foundUser.username, "userID" : foundUser.userID},
         process.env.REFRESH_TOKEN_SECRET,
         {
             expiresIn: '3d'

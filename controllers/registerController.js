@@ -8,6 +8,7 @@ const bcrypt = require('bcrypt');
     }
 }; */
 
+const uuid = require('uuid');
 const Users = require('../models/Users');
 
 const doRegister = async (req, res) => {
@@ -22,6 +23,7 @@ const doRegister = async (req, res) => {
 
     try {
         const newUser = await Users.create({
+            userID : uuid.v4(),
             username: username,
             password: await bcrypt.hash(password, 10),
             name: name,
