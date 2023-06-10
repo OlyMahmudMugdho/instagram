@@ -37,7 +37,7 @@ const getAccessToken = (req, res) => {
         { "username": req.username, "userID" : req.userID  },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: '3000s'
+            expiresIn: '30000s'
         }
     )
     console.log(accessToken);
