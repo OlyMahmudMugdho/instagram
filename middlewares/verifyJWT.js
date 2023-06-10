@@ -20,6 +20,7 @@ const verify = async (req, res, next) => {
             req.username = decoded.username;
             req.userID = decoded.userID;
             console.log(decoded.userID, "from verifyJWT");
+            console.log(decoded.username, "from verifyJWT");
             next();
         }
     })

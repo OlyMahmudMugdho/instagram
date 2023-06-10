@@ -25,7 +25,8 @@ const verifyAccess = (req, res, next) => {
                 console.log(error);
             }
             console.log()
-            req.author = decoded.userID;
+            req.author = decoded.username;
+            req.userID = decoded.userID
             next();
         }
     );
