@@ -17,16 +17,16 @@ const verifyAccess = (req, res, next) => {
         process.env.ACCESS_TOKEN_SECRET,
         (error, decoded) => {
             if (error) {
+                console.log(error);
                 return res.status(403).json(
                     {
                         "message": "inavlid token from verifyAccessToken"
                     }
                 )
-                console.log(error);
             }
-            console.log()
             req.author = decoded.username;
-            req.userID = decoded.userID
+            req.userID = decoded.userID;
+            req.userIDForPost = decoded.userID;
             next();
         }
     );
