@@ -34,12 +34,12 @@ const createPost = async (req, res) => {
                         message: "error from server"
                     })
                 }
-                else {
+                /* else {
                     return res.status(200).json({
                         success: true,
                         message: "file uploaded successfully"
                     })
-                }
+                } */
             })
         }
     )
@@ -66,7 +66,7 @@ const createPost = async (req, res) => {
     }
     return res.status(200).json(
         {
-            "message": "post created"
+            message: "post created"
         }
     );
 }
