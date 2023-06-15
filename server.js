@@ -3,10 +3,12 @@ const app = express();
 const cookieParser = require('cookie-parser');
 const dbConnection = require('./configs/connectDB');
 const cors = require('cors');
+const bodyParser = require('body-parser')
 const mongoose = require('mongoose');
 require('dotenv').config();
 
 dbConnection.connectDB();
+app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
 const corsConfig = {
     credentials: true,
@@ -39,6 +41,8 @@ app.use('/', require('./routes/register'));
 app.use('/', require('./routes/login'));
 app.use('/', require('./routes/logOut'));
 app.use('/', require('./routes/token'));
+app.use('/',require('./routes/posts'));
+app.use('/', require('./routes/likes'));
 
 mongoose.connection.once(
     'open',  () => {
