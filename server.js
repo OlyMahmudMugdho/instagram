@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 dbConnection.connectDB();
+
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
 const corsConfig = {
@@ -41,11 +42,12 @@ app.use('/', require('./routes/register'));
 app.use('/', require('./routes/login'));
 app.use('/', require('./routes/logOut'));
 app.use('/', require('./routes/token'));
-app.use('/',require('./routes/posts'));
+app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/likes'));
+app.use('/', require('./routes/follow'));
 
 mongoose.connection.once(
-    'open',  () => {
+    'open', () => {
         app.listen(5000, (req, res) => {
             console.log('working server');
         })
