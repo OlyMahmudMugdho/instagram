@@ -1,6 +1,5 @@
 const check = async (req, res, next) => {
     const cookie = req.cookies;
-    console.log(cookie);
     if (!cookie || !cookie.jwt) {
         return res.status(403).json({ "message": "unauthenticated" });
     }
