@@ -1,10 +1,3 @@
-/* const db = {
-    posts: require('../models/posts.json'),
-    setData: function (data) {
-        this.posts = data;
-    }
-} */
-
 const Posts = require('../models/Post'); 
 
 const showAllPosts = async (req, res) => {

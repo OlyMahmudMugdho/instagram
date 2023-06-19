@@ -6,42 +6,40 @@ const deletePost = async (req, res) => {
     const userID = req.params.postUserID;
     const postId = req.params.postId;
 
-    const loggedUserID = req.userID
-    console.log(loggedUserID)
+    const loggedUserID = req.userID;
 
-    if(!userID || !postId) {
+    if (!userID || !postId) {
         return res.sendStatus(404)
     }
 
-    console.log(userID)
-    console.log(postId)
 
-    if(loggedUserID != userID){
+
+    if (loggedUserID != userID) {
         return res.status(403).json({
-            error : true,
-            message :"unauthenticated"
-        })
+            error: true,
+            message: "unauthenticated"
+        });
     }
 
-    const foundPost = await Post.findOne({ $and : [{userID : loggedUserID}, {postId : postId}] });
+    const foundPost = await Post.findOne({ $and: [{ userID: loggedUserID }, { postId: postId }] });
 
-    if(!foundPost){
+    if (!foundPost) {
         return res.status(404).json({
-            error : true,
-            message : "no post found"
-        })
+            error: true,
+            message: "no post found"
+        });
     }
 
     try {
         const res = await foundPost.deleteOne();
     } catch (error) {
-        return res.sendStatus(404)
         console.log(error)
+        return res.sendStatus(404)
     }
 
     return res.status(200).json({
-        success : true,
-        message : "post deleted successfully"
+        success: true,
+        message: "post deleted successfully"
     })
 }
 

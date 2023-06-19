@@ -6,7 +6,6 @@ const PORT = process.env.PORT || 5000;
 const createPost = async (req, res) => {
     const postContent = await req.body.content;
     const images = req.files;
-    console.log(images)
     const author = req.author;
     const userID = req.userID;
     const postId = uuid.v4();
@@ -16,13 +15,12 @@ const createPost = async (req, res) => {
         return res.status(404).json({
             error: true,
             message: "no item selected"
-        })
+        });
     }
 
     Object.keys(images).forEach(
         (key) => {
             const fileName = images[key].name;
-            console.log(fileName);
             const filePath = path.join('files', 'posts', userID, author, postId, fileName);
             imageUrl = 'http://localhost:' + PORT + '/' + filePath;
 
@@ -32,25 +30,19 @@ const createPost = async (req, res) => {
                     return res.status(500).json({
                         error: true,
                         message: "error from server"
-                    })
+                    });
                 }
-                /* else {
-                    return res.status(200).json({
-                        success: true,
-                        message: "file uploaded successfully"
-                    })
-                } */
-            })
+            });
         }
     )
 
 
-    try{
+    try {
         const newPost = await Post.create({
             content: postContent,
             imageUrl: imageUrl,
             author: req.author,
-            userID : userID,
+            userID: userID,
             postId: postId,
             likes: 0,
             comments: 0
@@ -58,11 +50,11 @@ const createPost = async (req, res) => {
 
         await newPost.save();
     }
-    catch(error) {
+    catch (error) {
         console.log(error);
         return res.status(500).json({
-            message : "error due to mongodb"
-        })
+            message: "error due to mongodb"
+        });
     }
     return res.status(200).json(
         {
@@ -71,12 +63,7 @@ const createPost = async (req, res) => {
     );
 }
 
-const uploadImage = (req, res) => {
-
-
-}
 
 module.exports = {
-    createPost,
-    uploadImage
+    createPost
 };

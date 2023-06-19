@@ -4,7 +4,6 @@ const getSinglePost = async (req, res) => {
     const userID = req.params.postUserID;
     const postId = req.params.postId;
 
-    console.log({ userID: userID, postId: postId });
 
     const foundPost = await Post.findOne({ userID: userID, postId: postId });
 
@@ -17,7 +16,7 @@ const getSinglePost = async (req, res) => {
 
     return res.status(200).json({
         data: foundPost
-    })
+    });
 }
 
 module.exports = {

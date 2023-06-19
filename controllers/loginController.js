@@ -3,13 +3,6 @@ const jwt = require('jsonwebtoken');
 const Users = require('../models/Users');
 require('dotenv').config();
 
-/* const fs = require('fs'); */
-/* const usersDB = {
-    users: require('../models/users.json'),
-    setUsers: function (data) {
-        this.data = data;
-    }
-} */
 
 const handleLogin = async (req, res) => {
 
@@ -20,7 +13,7 @@ const handleLogin = async (req, res) => {
     }
 
     const foundUser = await Users.findOne({ username: username }).exec();
-    console.log(foundUser);
+
 
     if (!foundUser) {
         return res.status(403).json(
@@ -40,7 +33,7 @@ const handleLogin = async (req, res) => {
         )
     }
 
-    console.log(foundUser.userID, " from loginController")
+
     const refreshToken = jwt.sign(
         { "username": foundUser.username, "userID" : foundUser.userID},
         process.env.REFRESH_TOKEN_SECRET,
@@ -52,10 +45,6 @@ const handleLogin = async (req, res) => {
     foundUser.refreshToken = refreshToken;
     await foundUser.save();
 
-    /* const otherUsers = usersDB.users.filter(person => person.username !== username);
-
-    usersDB.setUsers([])
-    fs.writeFileSync('././models/users.json', JSON.stringify(usersDB.users)); */
 
     return res.status(200).cookie(
         'jwt',
