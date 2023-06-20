@@ -7,6 +7,10 @@ const likesSchema = new Schema({
         type: String,
         required: true
     },
+    author : {
+        type : String,
+        required : true
+    },
     postId: {
         type: String,
         required: true
