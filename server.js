@@ -45,6 +45,7 @@ app.use('/', require('./routes/token'));
 app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/likes'));
 app.use('/', require('./routes/follow'));
+app.use('/', require('./routes/comment'));
 
 mongoose.connection.once(
     'open', () => {
