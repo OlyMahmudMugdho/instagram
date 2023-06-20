@@ -54,6 +54,9 @@ const addComment = async (req, res) => {
 
         await newComment.save();
 
+        foundPost.comments = await foundPost.comments + 1;
+        foundPost.save();
+
         return res.status(200).json({
             success: true,
             message: "comment added to post successfully"
