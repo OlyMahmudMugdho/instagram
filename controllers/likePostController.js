@@ -26,6 +26,7 @@ const likePost = async (req, res) => {
 
     const createdLike = await Likes.create({
         userID: loggedInUserID,
+        author: author,
         postId: postId
     });
 
