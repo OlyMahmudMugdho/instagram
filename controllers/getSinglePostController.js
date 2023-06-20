@@ -4,6 +4,7 @@ const Post = require('../models/Post');
 const getSinglePost = async (req, res) => {
     const userID = req.params.postUserID;
     const postId = req.params.postId;
+    const loggedInUser = req.userID;
 
     if (!userID || !postId) {
         return res.status(404).json({
@@ -12,9 +13,11 @@ const getSinglePost = async (req, res) => {
         });
     }
 
+    const loggedUser = (userID === loggedInUser) ? true : false;
+
     const existedFollower = await Followers.findOne({ $and: [{ follower: req.userID }, { following: userID }] });
 
-    if (!existedFollower) {
+    if (!existedFollower && !loggedUser) {
         return res.status(403).json({
             error: true,
             message: "you are not following the user"
