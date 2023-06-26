@@ -53,6 +53,7 @@ mongoose.connection.once(
     'open', () => {
         app.listen(PORT, (req, res) => {
             console.log('working server');
+            res.sendStatus(200);
         })
     }
 )
