@@ -7,6 +7,8 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+const PORT = process.env.PORT || 5000;
+
 dbConnection.connectDB();
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -49,7 +51,7 @@ app.use('/', require('./routes/comment'));
 
 mongoose.connection.once(
     'open', () => {
-        app.listen(5000, (req, res) => {
+        app.listen(PORT, (req, res) => {
             console.log('working server');
         })
     }
