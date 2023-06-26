@@ -39,6 +39,8 @@ app.get('/', (req, res) => {
     )
 });
 
+
+
 app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/register'));
 app.use('/', require('./routes/login'));
@@ -53,7 +55,6 @@ mongoose.connection.once(
     'open', () => {
         app.listen(PORT, (req, res) => {
             console.log('working server');
-            res.status(200);
         })
     }
 )
