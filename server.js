@@ -50,6 +50,7 @@ app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/likes'));
 app.use('/', require('./routes/follow'));
 app.use('/', require('./routes/comment'));
+app.use('/', require('./routes/feed'));
 
 mongoose.connection.once(
     'open', () => {
