@@ -51,6 +51,7 @@ app.use('/', require('./routes/likes'));
 app.use('/', require('./routes/follow'));
 app.use('/', require('./routes/comment'));
 app.use('/', require('./routes/feed'));
+app.use('/', require('./routes/resetPassword'));
 
 mongoose.connection.once(
     'open', () => {
