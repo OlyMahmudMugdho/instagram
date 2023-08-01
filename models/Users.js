@@ -25,6 +25,10 @@ const userSchema = new Schema(
         refreshToken: {
             type: String,
             default: ""
+        },
+        resetCode : {
+            type : String,
+            expires : 3600
         }
     }
 )
