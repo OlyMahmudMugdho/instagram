@@ -1,69 +1,58 @@
-const Post = require('../models/Post');
+const Users = require('../models/Users');
+const Posts = require('../models/Post');
 const uuid = require('uuid');
-const path = require('path');
-const PORT = process.env.PORT || 5000;
 
 const createPost = async (req, res) => {
-    const postContent = await req.body.content;
-    const images = req.files;
-    const author = req.author;
-    const userID = req.userID;
-    const postId = uuid.v4();
-    let imageUrl;
+    const { content, image } = req.body;
+    console.log(req.userID);
 
-    if (!images) {
-        return res.status(404).json({
-            error: true,
-            message: "no item selected"
-        });
-    }
+    const PROTOCOL = 'http';
+    const SERVER = 'localhost';
+    const PORT = 5000;
 
-    Object.keys(images).forEach(
-        (key) => {
-            const fileName = images[key].name;
-            const filePath = path.join('files', 'posts', userID, author, postId, fileName);
-            imageUrl = 'http://localhost:' + PORT + '/' + filePath;
+    const ADRESS = PROTOCOL + '://' + SERVER + ':' + PORT;
 
-            images[key].mv(filePath, (error) => {
-                if (error) {
-                    console.log(error);
-                    return res.status(500).json({
-                        error: true,
-                        message: "error from server"
-                    });
-                }
-            });
-        }
-    )
+    let imageUrl = [];
 
+    req.files.map(file => imageUrl.push(ADRESS + '/files/' + file.filename));
+
+
+    console.log(imageUrl);
+    console.log(content);
+
+    const foundUser = await Users.findOne({ userID: req.userID });
+
+    const name = foundUser.name;
 
     try {
-        const newPost = await Post.create({
-            content: postContent,
+
+        const newPost = await Posts.create({
+            content: content,
             imageUrl: imageUrl,
-            author: req.author,
+            author: name,
             userID: userID,
-            postId: postId,
-            likes: 0,
-            comments: 0
-        });
+            postId: uuid.v4(),
+        })
 
         await newPost.save();
     }
     catch (error) {
         console.log(error);
+        console.log('error due to database');
         return res.status(500).json({
-            message: "error due to mongodb"
-        });
+            error: true,
+            message: 'internal server error'
+        })
     }
-    return res.status(200).json(
-        {
-            message: "post created"
-        }
-    );
-}
 
+    return res.status(200).json({
+        "sucess": true,
+        "message": "uploaded"
+    })
+
+
+}
 
 module.exports = {
     createPost
-};
+}
