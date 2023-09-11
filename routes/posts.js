@@ -44,7 +44,7 @@ router.route('/posts/myposts')
     .get(checkJWT.check, verifyAccessToken.verifyAccess, myPostsController.myPosts)
 
 router.route('/posts/:page')
-    .get(getPaginatedPostsController.getPaginatedPosts)
+    .get(checkJWT.check,verifyAccessToken.verifyAccess,getPaginatedPostsController.getPaginatedPosts)
 
 router.route('/posts/:postUserID/:postId')
     .get(checkJWT.check, verifyAccessToken.verifyAccess, getSinglePostController.getSinglePost)
