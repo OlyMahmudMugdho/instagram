@@ -3,9 +3,11 @@ const app = express();
 const cookieParser = require('cookie-parser');
 const dbConnection = require('./configs/connectDB');
 const cors = require('cors');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
+const helmet = require('helmet')
 const mongoose = require('mongoose');
 require('dotenv').config();
+app.use('/files',express.static('./files'));
 
 const PORT = process.env.PORT || 5000;
 
@@ -31,6 +33,9 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
+
+
 app.get('/', (req, res) => {
     res.json(
         {
@@ -53,6 +58,7 @@ app.use('/', require('./routes/comment'));
 app.use('/', require('./routes/feed'));
 app.use('/', require('./routes/resetPassword'));
 app.use('/', require('./routes/users'));
+app.use('/', require('./routes/search'));
 
 mongoose.connection.once(
     'open', () => {
