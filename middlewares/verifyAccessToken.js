@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const verifyAccess = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
+const verifyAccess = async (req, res, next) => {
+    const authHeader =await req.headers['authorization'];
+    console.log(authHeader);
     if (!authHeader) {
         return res.status(403).json(
             {
@@ -11,12 +12,14 @@ const verifyAccess = (req, res, next) => {
         )
     }
 
-    const accessToken = authHeader.split(' ')[1];
+    const accessToken = await authHeader.split(' ')[1];
+    console.log(accessToken)
     jwt.verify(
         accessToken,
         process.env.ACCESS_TOKEN_SECRET,
         (error, decoded) => {
             if (error) {
+                console.log("error detected")
                 console.log(error);
                 return res.status(403).json(
                     {
@@ -25,6 +28,7 @@ const verifyAccess = (req, res, next) => {
                 )
             }
             req.author = decoded.username;
+            console.log(decoded.username + " decoded")
             req.userID = decoded.userID;
             req.userIDForPost = decoded.userID;
             next();
