@@ -12,6 +12,8 @@ const handleLogin = async (req, res) => {
         return res.status(403).json({ "message": "empty fields" });
     }
 
+    console.log(username, " ", password)
+
     const foundUser = await Users.findOne({ username: username }).exec();
 
 
@@ -26,6 +28,7 @@ const handleLogin = async (req, res) => {
     const matched = await bcrypt.compare(password, foundUser.password);
 
     if (!matched) {
+        
         return res.status(403).json(
             {
                 "message": "wrong password"
@@ -49,7 +52,7 @@ const handleLogin = async (req, res) => {
     return res.status(200).cookie(
         'jwt',
         refreshToken,
-        { httpOnly: true, expiresIn: '60*60*1000s' }
+        { httpOnly: true, sameSite : 'None', secure : true , expiresIn: '60*60*1000s' }
     ).json(
         {
             "refreshToken": refreshToken,

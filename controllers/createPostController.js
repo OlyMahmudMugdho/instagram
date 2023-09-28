@@ -4,8 +4,8 @@ const uuid = require('uuid');
 
 const createPost = async (req, res) => {
     const { content, image } = req.body;
-    console.log(req.userID);
-
+    console.log(await req.userID + "from here");
+    const userID = await req.userID
     const PROTOCOL = 'http';
     const SERVER = 'localhost';
     const PORT = 5000;
@@ -20,9 +20,13 @@ const createPost = async (req, res) => {
     console.log(imageUrl);
     console.log(content);
 
-    const foundUser = await Users.findOne({ userID: req.userID });
+    const foundUser = await Users.findOne({ userID: userID }).exec();
+    
+    if(await foundUser) {
+        console.log("found")
+    }
 
-    const name = foundUser.name;
+    const name = await foundUser.name;
 
     try {
 
@@ -46,8 +50,8 @@ const createPost = async (req, res) => {
     }
 
     return res.status(200).json({
-        "sucess": true,
-        "message": "uploaded"
+        sucess: true,
+        message: "uploaded"
     })
 
 

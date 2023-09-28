@@ -32,13 +32,16 @@ const likePost = async (req, res) => {
 
     await createdLike.save();
 
-    foundPost.likes = await foundPost.likes + 1;
+    let prevLike = parseInt(await foundPost.likes);
+
+    foundPost.likes =  Number(prevLike) + 1;
     await foundPost.save();
 
     return res.status(200).json({
         success: true,
         message: "Post Liked"
     });
+
 
 }
 

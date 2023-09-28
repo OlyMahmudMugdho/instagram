@@ -8,15 +8,19 @@ const getAccessToken = async (req, res) => {
 
     if (!cookies || !cookies.jwt) {
         return res.status(403).json(
-            {   "error" : "no refreshToken",
-                "message": "unauthenticated",
+            {   "error" : true,
+                "message": "no refreshToken",
             }
         );
     }
 
     jwt.verify(cookies.jwt, process.env.REFRESH_TOKEN_SECRET, (error,decoded) => {
         if(error) {
-            return res.status(403).json({ "message": error.message })
+            return 
+            return res.sendStatus(403).json({ 
+                error : true, 
+                "message": "inavlid refresh token" 
+            })
         }
         req.username = decoded.username,
         req.userID = decoded.userID
@@ -34,7 +38,7 @@ const getAccessToken = async (req, res) => {
 
 
     return res.status(200).json(
-        {
+        {   success: true,
             "accessToken": accessToken
         }
     )

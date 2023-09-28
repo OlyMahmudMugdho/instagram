@@ -14,7 +14,7 @@ const getPaginatedPosts = async (req, res) => {
     const totalPages = parseInt((totalPosts / postsInPage)) + extraPage;
     console.log(totalPages)
 
-    if (page > totalPages) {
+    if (page >= totalPages || page <= 0) {
         return res.status(404).json({
             end: true,
             error: true,
@@ -25,6 +25,7 @@ const getPaginatedPosts = async (req, res) => {
     const lastIndex = page * postsInPage;
     const startingIndex = (lastIndex - postsInPage) + 1;
     const indexToSkip = startingIndex - 1;
+
     console.log(req.userID)
     const userID = req.userID
     const following = await Followers.find({ follower: userID });
@@ -38,7 +39,14 @@ const getPaginatedPosts = async (req, res) => {
     // const fetchedPosts = await Posts.find({ userID: followingIDs.following })
 
     console.log(fetchedPosts)
-    
+
+    if (await fetchedPosts.length === 0) {
+        return res.status(404).json({
+            end: true,
+            error: true,
+            message: 'page not found'
+        })
+    }
 
     return res.status(200).json({
         total: totalPosts,

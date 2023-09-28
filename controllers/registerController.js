@@ -3,7 +3,9 @@ const uuid = require('uuid');
 const Users = require('../models/Users');
 
 const doRegister = async (req, res) => {
-    const { username, password, name, email } = req.body;
+    const { username, password, name, email } = await req.body;
+    console.log(username)
+
     if (!username || !password || !name || !email) {
         return res.status(404).json({ "message": "empty field" });
     }
@@ -25,6 +27,7 @@ const doRegister = async (req, res) => {
     catch(error){
         return res.status(403).json(
             {
+                "error" : true,
                 "message" : error
             }
         )

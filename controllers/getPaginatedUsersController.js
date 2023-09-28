@@ -10,7 +10,7 @@ const getUsers = async (req, res) => {
     const usersPerPage = 3;
     const totalUsers = await Users.countDocuments();
     let extraPages;
-    ((totalUsers % usersPerPage) == 0) ? extraPages = 0 : extraPages = 1; 
+    ((totalUsers % usersPerPage) == 0) ? extraPages = 0 : extraPages = 1;
     const totalPages = parseInt((totalUsers / usersPerPage) + extraPages);
 
     if (requestedPage > totalPages) {
@@ -29,9 +29,9 @@ const getUsers = async (req, res) => {
     let usernames = [];
     let names = [];
 
-    users.map( (user) => userIDs.push(user.userID));
-    users.map( (user) => usernames.push(user.username));
-    users.map( (user) => names.push(user.name));
+    users.map((user) => userIDs.push(user.userID));
+    users.map((user) => usernames.push(user.username));
+    users.map((user) => names.push(user.name));
 
     console.log(userIDs);
     console.log(usernames);
@@ -39,10 +39,10 @@ const getUsers = async (req, res) => {
 
     res.status(200).json({
         success: true,
-        data : {
-            userIDs : userIDs,
-            usernames : usernames,
-            names : names
+        data: {
+            userIDs: userIDs,
+            usernames: usernames,
+            names: names
         },
     });
 }
