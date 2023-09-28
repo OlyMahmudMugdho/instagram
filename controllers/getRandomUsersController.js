@@ -1,9 +1,26 @@
 const Users = require('../models/Users');
-
+const Followers = require('../models/Followers')
 
 const getRandomUsers = async (req, res) => {
 
-    const fetchedUsers = await Users.aggregate([{ $sample: { size: 2 } }]);
+    const userID = req.userID;
+
+    const fetchedFollowingUsers = await Followers.find({ follower : userID });
+
+    let followedUsers = [];
+
+    const selfIndex = followedUsers.indexOf(userID);
+
+
+    fetchedFollowingUsers.map(
+        user => followedUsers.push(user.following)
+    )
+
+    
+    /* const fetchedUsers = await Users.aggregate([ { $match : { $nor : [{ userID :  { $in : followedUsers} }]} } ,{ $sample: { size: 3 } } ]); */
+
+    const fetchedUsers = await Users.aggregate([ { $match : { $nor : [{ userID :  { $in : [...followedUsers, userID]} }]} } ,{ $sample: { size: 3 } } ]);
+
 
     let userIDs = [];
     let usernames = [];
