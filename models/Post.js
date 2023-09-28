@@ -9,16 +9,16 @@ const postSchema = new Schema(
             required: true
         },
         imageUrl: {
-            type : String,
-            required : true
+            type: Array,
+            required: true
         },
         author: {
             type: String,
             required: true
         },
-        userID : {
-            type : String,
-            required : true
+        userID: {
+            type: String,
+            required: true
         },
         postId: {
             type: String,
@@ -28,7 +28,10 @@ const postSchema = new Schema(
             type: Date,
             default: Date.now()
         },
-        likes: Number,
+        likes: {
+            type: Number,
+            default: 0
+        },
         comments: Number,
     }
 );
