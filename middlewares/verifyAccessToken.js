@@ -22,7 +22,7 @@ const verifyAccess = async (req, res, next) => {
                 console.log("error detected")
                 console.log(error);
                 return res.status(403).json(
-                    {
+                    {   error : true,
                         "message": "inavlid token from verifyAccessToken"
                     }
                 )
