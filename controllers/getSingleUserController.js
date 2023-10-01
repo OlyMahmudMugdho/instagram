@@ -1,4 +1,5 @@
 const User = require('../models/Users');
+const Followers = require('../models/Followers');
 
 const getSingleUser = async (req, res) => {
     const userID = req.params.userID;
@@ -21,7 +22,7 @@ const getSingleUser = async (req, res) => {
 
     return res.status(200).json({
         success : true,
-        message  : foundUser
+        message  : {foundUser}
     })
 }
 

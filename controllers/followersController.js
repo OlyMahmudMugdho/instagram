@@ -18,7 +18,7 @@ const follow = async (req, res) => {
         return res.status(404).json(
             {
                 error: true,
-                message: "USer not found"
+                message: "User not found"
             }
         );
     }
@@ -39,10 +39,19 @@ const follow = async (req, res) => {
 
         await newFollower.save();
 
+        const loggedUser = await Users.findOne({ userID: req.userID });
+        loggedUser.following = await Number(await loggedUser.following) + 1;
+        await loggedUser.save();
+
+        existedUser.followers = await Number(await await existedUser.followers + 1);
+
+        await existedUser.save();
+
         return res.status(200).json({
             success: true,
             message: "followed"
         })
+        
 
     } catch (error) {
         console.log(error);
