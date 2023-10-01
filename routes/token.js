@@ -3,6 +3,6 @@ const getAccessTokenController = require('../controllers/getAccessTokenControlle
 const verifyJWT = require('../middlewares/verifyJWT');
 
 router.route('/token')
-    .get(verifyJWT.verify,getAccessTokenController.getAccessToken);
+    .get(getAccessTokenController.getAccessToken);
 
 module.exports = router;

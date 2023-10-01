@@ -36,7 +36,7 @@ require('dotenv').config();
 
 router.route('/posts')
     .get(checkRoute.checkUrl, checkJWT.check, verifyAccessToken.verifyAccess, allPostsController.showAllPosts)
-    .post(checkJWT.check,verifyAccessToken.verifyAccess, upload.array('image', 50), createPostController.createPost)
+    .post(checkJWT.check, verifyAccessToken.verifyAccess, upload.array('image', 50), createPostController.createPost)
 
 /* .post(verifyAccessToken.verifyAccess,fileUpload({ createParentPath: true }), createPostController.createPost) */
 
@@ -44,7 +44,7 @@ router.route('/posts/myposts')
     .get(checkJWT.check, verifyAccessToken.verifyAccess, myPostsController.myPosts)
 
 router.route('/posts/:page')
-    .get(checkJWT.check,verifyAccessToken.verifyAccess,getPaginatedPostsController.getPaginatedPosts)
+    .get(checkJWT.check, verifyAccessToken.verifyAccess, getPaginatedPostsController.getPaginatedPosts)
 
 router.route('/posts/:postUserID/:postId')
     .get(checkJWT.check, verifyAccessToken.verifyAccess, getSinglePostController.getSinglePost)
