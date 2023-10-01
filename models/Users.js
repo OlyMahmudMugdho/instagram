@@ -22,17 +22,25 @@ const userSchema = new Schema(
             type: String,
             required: true
         },
-        profilePicture : {
-            type : String,
-            default : null
+        profilePicture: {
+            type: String,
+            default: null
         },
         refreshToken: {
             type: String,
             default: ""
         },
-        resetCode : {
-            type : String,
-            expires : 3600
+        resetCode: {
+            type: String,
+            expires: 3600
+        },
+        followers: {
+            type: Number,
+            default: 0
+        },
+        following: {
+            type: Number,
+            default: 0
         }
     }
 )
