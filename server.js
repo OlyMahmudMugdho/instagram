@@ -44,7 +44,7 @@ app.get('/', (req, res) => {
     )
 });
 
-
+app.set("trust proxy",1);
 
 app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/register'));
