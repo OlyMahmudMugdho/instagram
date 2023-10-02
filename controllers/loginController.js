@@ -46,6 +46,7 @@ const handleLogin = async (req, res) => {
     );
 
     foundUser.refreshToken = refreshToken;
+    console.log(process.env.REFRESH_TOKEN_SECRET, " checking process.env")
     await foundUser.save();
 
 
