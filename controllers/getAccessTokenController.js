@@ -16,7 +16,7 @@ const getAccessToken = async (req, res) => {
 
     jwt.verify(cookies.jwt, process.env.REFRESH_TOKEN_SECRET, (error,decoded) => {
         if(error) {
-            return 
+             
             return res.sendStatus(403).json({ 
                 error : true, 
                 "message": "inavlid refresh token" 
