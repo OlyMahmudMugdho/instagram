@@ -16,7 +16,7 @@ const verifyAccess = async (req, res, next) => {
     console.log(accessToken)
     jwt.verify(
         accessToken,
-        process.env.ACCESS_TOKEN_SECRET,
+        process.env.ACCESS_TOKEN_SECRET || ACCESS_TOKEN_SECRET,
         (error, decoded) => {
             if (error) {
                 console.log("error detected")
