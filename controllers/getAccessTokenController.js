@@ -14,7 +14,7 @@ const getAccessToken = async (req, res) => {
         );
     }
 
-    jwt.verify(cookies.jwt, process.env.REFRESH_TOKEN_SECRET || REFRESH_TOKEN_SECRET, (error,decoded) => {
+    jwt.verify(cookies.jwt, process.env.REFRESH_TOKEN_SECRET, (error,decoded) => {
         if(error) {
              
             return res.sendStatus(403).json({ 
@@ -30,7 +30,7 @@ const getAccessToken = async (req, res) => {
 
     const accessToken = jwt.sign(
         { "username": req.username, "userID": req.userID },
-        process.env.ACCESS_TOKEN_SECRET || ACCESS_TOKEN_SECRET,
+        process.env.ACCESS_TOKEN_SECRET,
         {
             expiresIn: '30000s'
         }

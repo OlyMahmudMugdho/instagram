@@ -39,7 +39,7 @@ const handleLogin = async (req, res) => {
 
     const refreshToken = jwt.sign(
         { "username": foundUser.username, "userID": foundUser.userID },
-        process.env.REFRESH_TOKEN_SECRET || REFRESH_TOKEN_SECRET,
+        process.env.REFRESH_TOKEN_SECRET,
         {
             expiresIn: '3d'
         }
@@ -53,7 +53,7 @@ const handleLogin = async (req, res) => {
     return res.status(200).cookie(
         'jwt',
         refreshToken,
-        { httpOnly: true, sameSite: 'None', secure: true, expiresIn: '60*60*1000s' }
+        { httpOnly: true, sameSite: 'None', secure: false, expiresIn: '60*60*1000s' }
     ).json(
         {
             "refreshToken": refreshToken,
