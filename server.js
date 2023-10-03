@@ -19,6 +19,7 @@ const corsConfig = {
     credentials: true,
     origin: (origin, callback) => {
         if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
+          re.header('Access-Control-Allow-Credentials', true);
             callback(null, true);
         }
         else {
