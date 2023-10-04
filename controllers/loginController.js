@@ -56,7 +56,7 @@ const handleLogin = async (req, res) => {
       domain : 'http://localhost:5173',
     httpOnly: true,
       secure: false,
-    expires: new Date(Date.now() + one day),
+    expires: new Date(Date.now() + oneDay),
   });
 
 
