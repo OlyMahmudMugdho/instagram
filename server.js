@@ -42,7 +42,7 @@ const corsConfig = {
 
 app.use(cors(corsConfig));
 
-app.use(cookieParser('secret'));
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
