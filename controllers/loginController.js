@@ -53,10 +53,10 @@ const handleLogin = async (req, res) => {
     const oneDay = 1000 * 60 * 60 * 24;
 
   res.cookie('jwt', refreshToken, {
+      domain : 'http://localhost:5173',
     httpOnly: true,
-    expires: new Date(Date.now() + oneDay),
-      sameSite : 'None',
-    secure: true,
+      secure: false,
+    expires: new Date(Date.now() + one day),
   });
 
 
