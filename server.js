@@ -4,7 +4,8 @@ const cookieParser = require('cookie-parser');
 const dbConnection = require('./configs/connectDB');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const helmet = require('helmet')
+const helmet = require('helmet');
+const credentials = require('./configs/credentials').credentials;
 const mongoose = require('mongoose');
 require('dotenv').config();
 app.use('/files',express.static('./files'));
@@ -13,13 +14,15 @@ const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
 
+
+app.use(credentials)
+
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
 const corsConfig = {
     credentials: true,
     origin: (origin, callback) => {
         if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
-        
             callback(null, true);
         }
         else {
