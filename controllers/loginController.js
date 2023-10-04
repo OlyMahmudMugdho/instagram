@@ -53,7 +53,7 @@ const handleLogin = async (req, res) => {
     return res.cookie(
         'jwt',
         refreshToken,
-        {     httpOnly: true, expiresIn: '60*60*1000s' }
+        {     httpOnly: true, secure : true, sameSite : 'None' ,expiresIn: '60*60*1000s' }
     ).json(
         {
             "refreshToken": refreshToken,
