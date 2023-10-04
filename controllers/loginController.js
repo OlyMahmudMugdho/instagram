@@ -56,7 +56,7 @@ const handleLogin = async (req, res) => {
     httpOnly: true,
     expires: new Date(Date.now() + oneDay),
     secure: true,
-    domain: ".onrender.com"
+    domain: "http://localhost:5173"
   });
 
 
