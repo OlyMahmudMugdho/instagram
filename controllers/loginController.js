@@ -53,7 +53,7 @@ const handleLogin = async (req, res) => {
     res.cookie(
         'jwt',
         refreshToken,
-        {     httpOnly: true, expires: '60*60*1000s' }
+        {     httpOnly: true, maxAge: '60*60*1000s' }
     )
 
 
