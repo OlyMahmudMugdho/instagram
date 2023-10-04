@@ -50,11 +50,14 @@ const handleLogin = async (req, res) => {
     await foundUser.save();
 
 
-    return res.cookie(
+    res.cookie(
         'jwt',
         refreshToken,
-        {     httpOnly: false, secure : true, sameSite : 'None' ,expiresIn: '60*60*1000s' }
-    ).json(
+        {     httpOnly: true, expiresIn: '60*60*1000s' }
+    )
+
+
+    return res.json(
         {
             "refreshToken": refreshToken,
             "message": "logged in",
