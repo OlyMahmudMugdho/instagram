@@ -15,7 +15,16 @@ const PORT = process.env.PORT || 5000;
 dbConnection.connectDB();
 
 
+
 app.use(credentials)
+
+app.use((req,res,next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    next();
+})
 
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
