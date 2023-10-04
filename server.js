@@ -33,7 +33,7 @@ const corsConfig = {
 
 app.use(cors(corsConfig));
 
-app.use(cookieParser());
+app.use(cookieParser('secret'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -47,8 +47,6 @@ app.get('/', (req, res) => {
         }
     )
 });
-
-app.set("trust proxy",1);
 
 app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/register'));
