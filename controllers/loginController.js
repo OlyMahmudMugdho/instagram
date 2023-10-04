@@ -55,8 +55,8 @@ const handleLogin = async (req, res) => {
   res.cookie('jwt', refreshToken, {
     httpOnly: true,
     expires: new Date(Date.now() + oneDay),
-    secure: false,
-    domain: "http://localhost:5173"
+      sameSite : 'None',
+    secure: true,
   });
 
 
