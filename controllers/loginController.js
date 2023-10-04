@@ -50,7 +50,7 @@ const handleLogin = async (req, res) => {
     await foundUser.save();
 
 
-    return res.status(200).header('Access-Control-Allow-Credentials',true).cookie(
+    return res.cookie(
         'jwt',
         refreshToken,
         {     httpOnly: true, secure: true, sameSite:'None', expiresIn: '60*60*1000s' }
