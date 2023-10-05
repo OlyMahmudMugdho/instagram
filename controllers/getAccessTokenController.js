@@ -14,7 +14,7 @@ const getAccessToken = async (req, res) => {
         );
     } */
 
-    const authHeader = req.headers['authentication'];
+    const authHeader = await req.headers['authorization'];
     const cookies = authHeader.split(' ')[1];
     console.log(cookies)
 
