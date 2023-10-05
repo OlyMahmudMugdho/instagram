@@ -6,7 +6,10 @@ require('dotenv').config();
 
 const handleLogin = async (req, res) => {
 
-    const { username, password } = await req.body;
+    // const { username, password } = await req.body;
+
+    const username = req.body.username;
+    const password = req.body.password;
 
     if (!username || !password) {
         return res.status(403).json({ "message": "empty fields" });
