@@ -48,13 +48,14 @@ const handleLogin = async (req, res) => {
     foundUser.refreshToken = refreshToken;
     console.log(process.env.REFRESH_TOKEN_SECRET, " checking process.env")
     await foundUser.save();
-
-
-    return res.status(200).cookie(
+    
+    res.cookie(
         'jwt',
         refreshToken,
-        { httpOnly: true, secure: true, sameSite: 'none', maxAge : 60*60*1000 }
-    ).json(
+        { httpOnly: false, secure: true, sameSite: 'none', maxAge : 60*60*1000 }
+    )
+
+    return res.status(200).json(
         {
             "refreshToken": refreshToken,
             "message": "logged in",
