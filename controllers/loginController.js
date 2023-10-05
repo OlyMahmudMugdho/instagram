@@ -55,15 +55,7 @@ const handleLogin = async (req, res) => {
         { httpOnly: false, secure: true, sameSite: 'strict', maxAge : 60*60*1000 }
     )
 
-    return res.status(200).json(
-        {
-            "refreshToken": refreshToken,
-            "message": "logged in",
-            data: [
-                { userID: await foundUser.userID }
-            ]
-        }
-    )
+    
 }
 
 module.exports = { handleLogin }
