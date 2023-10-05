@@ -20,7 +20,7 @@ app.use(credentials)
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
 const corsConfig = {
-    origin : true,
+    // origin : true,
     credentials: true,
     origin: (origin, callback) => {
         if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
