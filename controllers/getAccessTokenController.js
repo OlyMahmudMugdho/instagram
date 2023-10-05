@@ -16,15 +16,21 @@ const getAccessToken = async (req, res) => {
 
     const authHeader = await req.headers['authorization'];
     if(!authHeader) {
-        return res.sendStatus(403);
+        return res.status(403).json({
+            error : true,
+            message : 'no auth headers'
+        });
     }
 
 
     const cookies = authHeader.split(' ')[1];
     if(!cookies) {
-        return res.sendStatus(403)
+        return res.status(403).json({
+            error : true,
+            message : 'no tokens'
+        });
     }
-    
+
     console.log(cookies)
 
     jwt.verify(cookies, process.env.REFRESH_TOKEN_SECRET, (error,decoded) => {
