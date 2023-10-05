@@ -6,10 +6,7 @@ require('dotenv').config();
 
 const handleLogin = async (req, res) => {
 
-    // const { username, password } = await req.body;
-
-    const username = req.body.username;
-    const password = req.body.password;
+    const { username, password } = await req.body;
 
     if (!username || !password) {
         return res.status(403).json({ "message": "empty fields" });
@@ -51,14 +48,21 @@ const handleLogin = async (req, res) => {
     foundUser.refreshToken = refreshToken;
     console.log(process.env.REFRESH_TOKEN_SECRET, " checking process.env")
     await foundUser.save();
-    
-    res.cookie(
+
+
+    return res.status(200).cookie(
         'jwt',
         refreshToken,
-        { httpOnly: false, secure: true, sameSite: 'none', maxAge : 60*60*1000 }
+        { httpOnly: true, secure: true, sameSite: 'none', maxAge : 60*60*1000 }
+    ).json(
+        {
+            "refreshToken": refreshToken,
+            "message": "logged in",
+            data: [
+                { userID: await foundUser.userID }
+            ]
+        }
     )
-
-    
 }
 
 module.exports = { handleLogin }
