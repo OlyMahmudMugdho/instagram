@@ -15,20 +15,12 @@ const PORT = process.env.PORT || 5000;
 dbConnection.connectDB();
 
 
-
 app.use(credentials)
-
-app.use((req,res,next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    next();
-})
 
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
 const corsConfig = {
+    origin : true,
     credentials: true,
     origin: (origin, callback) => {
         if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
@@ -56,6 +48,8 @@ app.get('/', (req, res) => {
         }
     )
 });
+
+app.set("trust proxy",1);
 
 app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/register'));
