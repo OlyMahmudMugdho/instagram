@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 dbConnection.connectDB();
 
 app.use((_req, res, next) => {
-  res.header('Access-Control-Allow-Origin', true);
+  res.header('Access-Control-Allow-Credentials', true);
 
   next();
 });
