@@ -55,7 +55,7 @@ const corsConfig = {
 
  app.options('*', cors())
 
-app.use(cors({credentials : true ,origin : 'http://localhost:5173'}));
+app.use(cors(corsConfig));
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
