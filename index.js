@@ -26,9 +26,11 @@ app.use((_req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
 const corsConfig = {
-    
+    origin : '*',
     credentials: true,
-    origin: (origin, callback) => {
+    
+    /* 
+        origin: (origin, callback) => {
         if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
             callback(null, true);
         }
@@ -36,6 +38,8 @@ const corsConfig = {
             callback(new Error("Blocked by me"));
         }
     },
+    
+    */
     methods : ["GET","POST","PUT","DELETE"]
 };
 
