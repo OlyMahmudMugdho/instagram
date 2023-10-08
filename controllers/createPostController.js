@@ -6,11 +6,11 @@ const createPost = async (req, res) => {
     const { content, image } = req.body;
     console.log(await req.userID + "from here");
     const userID = await req.userID
-    const PROTOCOL = 'http';
-    const SERVER = 'localhost';
+    const PROTOCOL = 'https';
+    const SERVER = 'instagram-cx9j.onrender.com';
     const PORT = 5000;
 
-    const ADRESS = PROTOCOL + '://' + SERVER + ':' + PORT;
+    const ADRESS = PROTOCOL + '://' + SERVER;
 
     let imageUrl = [];
 
