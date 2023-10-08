@@ -32,6 +32,9 @@ const corsConfig = {
     }
 };
 
+
+app.options('*', cors())
+
 app.use(cors(corsConfig));
 
 app.use(cookieParser());
