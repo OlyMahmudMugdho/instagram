@@ -47,13 +47,13 @@ const corsConfig = {
     },
     
     
-    methods : ["GET","POST","PUT","DELETE"]
+  //  methods : ["GET","POST","PUT","DELETE"]
 };
 
 */
 
 
- app.options('*', cors())
+ app.options('http://localhost:5173', cors())
 
 app.use(cors(corsConfig));
 
