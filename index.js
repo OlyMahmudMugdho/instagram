@@ -13,12 +13,12 @@ app.use('/files',express.static('./files'));
 const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
-/*
-app.use((_req, res, next) => {
+
+app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', true);
   res.header('Access-Control-Allow-Origin','http://localhost:5173');
   next();
-}); */
+}); 
 
 // app.use(credentials)
 
