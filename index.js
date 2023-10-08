@@ -13,22 +13,24 @@ app.use('/files',express.static('./files'));
 const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
-
+/*
 app.use((_req, res, next) => {
   res.header('Access-Control-Allow-Credentials', true);
   res.header('Access-Control-Allow-Origin','http://localhost:5173');
   next();
-});
+}); */
 
 // app.use(credentials)
 
 app.use(bodyParser.urlencoded({ extended: false }));
+
+/*
 const corsOptions = ['*', 'https://example.com'];
 const corsConfig = {
     origin : '*',
     credentials: true,
     
-    /* 
+   
         origin: (origin, callback) => {
         if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
             callback(null, true);
@@ -38,9 +40,11 @@ const corsConfig = {
         }
     },
     
-    */
+    
     methods : ["GET","POST","PUT","DELETE"]
 };
+
+*/
 
 
  app.options('*', cors())
