@@ -45,7 +45,7 @@ const corsConfig = {
 
 // app.options('*', cors())
 
-app.use(cors());
+app.use(cors({origin : '*'}));
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
