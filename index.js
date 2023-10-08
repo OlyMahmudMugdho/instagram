@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 dbConnection.connectDB();
 
 
-app.use(credentials)
+// app.use(credentials)
 
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
