@@ -15,8 +15,7 @@ const PORT = process.env.PORT || 5000;
 dbConnection.connectDB();
 
 app.use((_req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.header('Access-Control-Allow-Headers', '*');
+  res.header('Access-Control-Allow-Origin', true);
 
   next();
 });
@@ -44,9 +43,9 @@ const corsConfig = {
 };
 
 
-app.options('*', cors())
+// app.options('*', cors())
 
-app.use(cors(corsConfig));
+app.use(cors());
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
