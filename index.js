@@ -29,7 +29,8 @@ const corsConfig = {
         else {
             callback(new Error("Blocked by me"));
         }
-    }
+    },
+    methods : ["GET","POST","PUT","DELETE"]
 };
 
 
