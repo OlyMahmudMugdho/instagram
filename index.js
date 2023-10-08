@@ -24,20 +24,26 @@ app.use((_req, res, next) => {
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-/*
-const corsOptions = ['*', 'https://example.com'];
+
+const corsOptions = ['http://localhost:5173', 'https://example.com'];
 const corsConfig = {
-    origin : '*',
+ 
     credentials: true,
-    
-   
+   /*
         origin: (origin, callback) => {
         if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
             callback(null, true);
         }
         else {
             callback(new Error("Blocked by me"));
-        }
+        } */
+
+ origin: (origin, callback) => {
+    if(whitelist.includes(origin))
+      return callback(null, true)
+
+      callback(new Error('Not allowed by CORS'));
+  }
     },
     
     
