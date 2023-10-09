@@ -5,16 +5,16 @@ require('dotenv').config();
 
 const getAccessToken = async (req, res) => {
 
-    /* const cookies = req.cookies;
+    const cookies = req.cookies;
     if (!cookies || !cookies.jwt) {
         return res.status(403).json(
             {   "error" : true,
                 "message": "no refreshToken",
             }
         );
-    } */
+    }
 
-    const authHeader = await req.headers['authorization'];
+    /* const authHeader = await req.headers['authorization'];
     if(!authHeader) {
         return res.status(403).json({
             error : true,
@@ -29,7 +29,7 @@ const getAccessToken = async (req, res) => {
             error : true,
             message : 'no tokens'
         });
-    }
+    } */
 
     console.log(cookies)
 
