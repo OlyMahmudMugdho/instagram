@@ -40,8 +40,9 @@ app.use(express.json());
 
 
 
-app.get('/*', (req, res) => {
-    res.redirect('/home');
+app.get('/', (req, res) => {
+    res.
+        sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
 });
 
 
