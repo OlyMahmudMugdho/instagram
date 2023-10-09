@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const getAccessToken = async (req, res) => {
 
-    const cookies = req.cookies.jwt;
+    const cookies = req.cookies;
     if (!cookies || !cookies.jwt) {
         return res.status(403).json(
             {   "error" : true,
@@ -33,7 +33,7 @@ const getAccessToken = async (req, res) => {
 
     console.log(cookies)
 
-    jwt.verify(cookies, process.env.REFRESH_TOKEN_SECRET, (error,decoded) => {
+    jwt.verify(cookies.jwt, process.env.REFRESH_TOKEN_SECRET, (error,decoded) => {
         if(error) {
              
             return res.sendStatus(403).json({ 
