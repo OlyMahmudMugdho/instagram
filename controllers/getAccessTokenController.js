@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const getAccessToken = async (req, res) => {
 
-    const cookies = req.cookies;
+    const cookies = req.cookies.jwt;
     if (!cookies || !cookies.jwt) {
         return res.status(403).json(
             {   "error" : true,
