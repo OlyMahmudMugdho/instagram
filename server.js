@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
 
-app.use(express.static(path.join(__dirname,'pixl/dist/')))
+app.use(express.static(path.join(__dirname,'client/build/')))
 
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
@@ -42,7 +42,7 @@ app.use(express.json());
 
 app.get('/', (req, res) => {
     res.
-        sendFile(path.join(__dirname, 'pixl', 'dist', 'index.html'));
+        sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
 
 
