@@ -18,7 +18,7 @@ dbConnection.connectDB();
 app.use(express.static(path.join(__dirname,'client/build/')))
 
 app.use(bodyParser.urlencoded({ extended: false }));
-const corsOptions = ['https://www.onrender.com'];
+const corsOptions = ['https://*.onrender.com'];
 const corsConfig = {
     credentials: true,
     origin: (origin, callback) => {
