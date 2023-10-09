@@ -9,7 +9,10 @@ const handleLogin = async (req, res) => {
     const { username, password } = await req.body;
 
     if (!username || !password) {
-        return res.status(403).json({ "message": "empty fields" });
+        return res.status(403).json({ 
+            error : true,
+            "message": "empty fields"
+     });
     }
 
     console.log(username, " ", password)
