@@ -20,7 +20,8 @@ const handleLogin = async (req, res) => {
     if (!foundUser) {
         return res.status(403).json(
             {
-                "message": "user not found"
+                error: true,
+                message: "user not found"
             }
         )
     }
@@ -31,7 +32,8 @@ const handleLogin = async (req, res) => {
 
         return res.status(403).json(
             {
-                "message": "wrong password"
+                error: true,
+                message: "wrong password"
             }
         )
     }
@@ -53,9 +55,10 @@ const handleLogin = async (req, res) => {
     return res.status(200).cookie(
         'jwt',
         refreshToken,
-        { httpOnly: true, secure: true, sameSite: 'none', maxAge : 60*60*1000 }
+        { httpOnly: true, secure: true, sameSite: 'none', maxAge: 60 * 60 * 1000 }
     ).json(
         {
+            success: true,
             "refreshToken": refreshToken,
             "message": "logged in",
             data: [
