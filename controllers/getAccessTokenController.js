@@ -41,8 +41,8 @@ const getAccessToken = async (req, res) => {
                 "message": "inavlid refresh token" 
             })
         }
-        req.username = decoded.username,
-        req.userID = decoded.userID
+        req.username = decoded.username;
+        req.userID = decoded.userID;
     } )
         
 
