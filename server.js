@@ -7,13 +7,15 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const credentials = require('./configs/credentials').credentials;
 const mongoose = require('mongoose');
+const path = require('path');
 require('dotenv').config();
-app.use('/files',express.static('./files'));
+app.use('/files', express.static('./files'));
 
 const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
 
+app.use(express.static(path.join(__dirname,'pixl/dist/')))
 
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*', 'https://example.com'];
@@ -39,11 +41,8 @@ app.use(express.json());
 
 
 app.get('/', (req, res) => {
-    res.json(
-        {
-            "success": true
-        }
-    )
+    res.
+        sendFile(path.join(__dirname, 'pixl', 'dist', 'index.html'));
 });
 
 
@@ -61,7 +60,7 @@ app.use('/', require('./routes/feed'));
 app.use('/', require('./routes/resetPassword'));
 app.use('/', require('./routes/users'));
 app.use('/', require('./routes/search'));
-app.use('/',require('./routes/helper'))
+app.use('/', require('./routes/helper'))
 
 mongoose.connection.once(
     'open', () => {
