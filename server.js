@@ -14,6 +14,7 @@ app.use('/files', express.static('./files'));
 const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
+app.set("trust proxy", 1);
 
 // app.use(express.static(path.resolve(__dirname,'client/build/')))
 
