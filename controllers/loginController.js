@@ -54,12 +54,13 @@ const handleLogin = async (req, res) => {
     console.log(process.env.REFRESH_TOKEN_SECRET, " checking process.env")
     await foundUser.save();
 
-
-    return res.status(200).cookie(
+    res.cookie(
         'jwt',
         refreshToken,
         { httpOnly: true, secure: true, sameSite: 'none', maxAge: 60 * 60 * 1000 }
-    ).json(
+    );
+    
+    return res.status(200).json(
         {
             success: true,
             "refreshToken": refreshToken,
