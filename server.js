@@ -15,10 +15,10 @@ const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
 
-app.use(express.static(path.resolve(__dirname,'client/build/')))
+// app.use(express.static(path.resolve(__dirname,'client/build/')))
 
 app.use(bodyParser.urlencoded({ extended: false }));
-const corsOptions = ['*'];
+const corsOptions = ['https://pixl-frontend.onrender.com'];
 const corsConfig = {
     credentials: true,
     origin: (origin, callback) => {
