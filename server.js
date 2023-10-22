@@ -41,8 +41,10 @@ app.use(express.json());
 
 
 app.get('/', (req, res) => {
-    res.
-        sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    res.json({
+        success : true
+    })
+      //  sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
 });
 
 
