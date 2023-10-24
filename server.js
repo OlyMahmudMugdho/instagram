@@ -20,11 +20,11 @@ dbConnection.connectDB();
 app.use(express.static(path.resolve(__dirname, 'client/dist/')))
 
 app.use(bodyParser.urlencoded({ extended: false }));
-const corsOptions = ['https://instagram-cx9j.onrender.com'];
+const corsOptions = ['https://pixl-react.netlify.app/'];
 const corsConfig = {
     credentials: true,
     origin: (origin, callback) => {
-        if (corsOptions[0] === 'https://pixl-react.netlify.app' || corsOptions.indexOf(origin) !== -1) {
+        if (corsOptions[0] === '*' || corsOptions.indexOf(origin) !== -1) {
             callback(null, true);
         }
         else {
