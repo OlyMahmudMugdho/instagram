@@ -34,7 +34,7 @@ const getAccessToken = async (req, res) => {
     }
 
     console.log(refToken)
-
+/*
     jwt.verify(refToken.jwt, process.env.REFRESH_TOKEN_SECRET, (error,decoded) => {
         if(error) {
              
@@ -47,7 +47,20 @@ const getAccessToken = async (req, res) => {
         req.userID = decoded.userID;
     } )
         
+*/
 
+        jwt.verify(refToken, process.env.REFRESH_TOKEN_SECRET, (error,decoded) => {
+        if(error) {
+             
+            return res.sendStatus(403).json({ 
+                error : true, 
+                "message": "inavlid refresh token" 
+            })
+        }
+        req.username = decoded.username;
+        req.userID = decoded.userID;
+    } )
+        
 
     const accessToken = jwt.sign(
         { "username": req.username, "userID": req.userID },
