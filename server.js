@@ -20,7 +20,7 @@ dbConnection.connectDB();
 app.use(express.static(path.resolve(__dirname, 'client/dist/')))
 
 app.use(bodyParser.urlencoded({ extended: false }));
-const corsOptions = ['https://pixl-react.netlify.app'];
+const corsOptions = ['https://pixl-react.netlify.app','pixl-react.netlify.app','.netlify.app','*.netlify.app','netlify.app'];
 const corsConfig = {
     credentials: true,
     origin: (origin, callback) => {
