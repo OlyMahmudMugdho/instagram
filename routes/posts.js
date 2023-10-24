@@ -17,6 +17,7 @@ const path = require('path');
 const myPostsController = require('../controllers/getMyPostController');
 const getPaginatedPostsController = require('../controllers/getPaginatedPostsController');
 
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, './files')

@@ -8,18 +8,19 @@ const helmet = require('helmet');
 const credentials = require('./configs/credentials').credentials;
 const mongoose = require('mongoose');
 const path = require('path');
+var cloudinary = require('cloudinary').v2
+
 require('dotenv').config();
 app.use('/files', express.static('./files'));
 
 const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
-app.set("trust proxy", 1);
 
-// app.use(express.static(path.resolve(__dirname,'client/build/')))
+app.use(express.static(path.resolve(__dirname, 'client/dist/')))
 
 app.use(bodyParser.urlencoded({ extended: false }));
-const corsOptions = ['https://pixl-frontend.onrender.com'];
+const corsOptions = ['https://instagram-cx9j.onrender.com'];
 const corsConfig = {
     credentials: true,
     origin: (origin, callback) => {
@@ -42,12 +43,36 @@ app.use(express.json());
 
 
 app.get('/', (req, res) => {
-    res.json({
-        success : true
-    })
-      //  sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    /* res.json({
+        success: true
+    }) */
+
+    res.
+        sendFile(path.resolve(__dirname, 'client', 'dist', 'index.html'));
 });
 
+
+app.get('/api', (req, res) => {
+    res.json({
+        success: true
+    })
+
+    /* res.
+        sendFile(path.resolve(__dirname, 'client', 'build', 'index.html')); */
+});
+
+cloudinary.config({
+    cloud_name: 'dnmubeloc',
+    api_key: '156698557795686',
+    api_secret: '1mljPOjNWxfNYtjUMTcWIFQlu0Q'
+});
+
+/* 
+
+cloudinary.uploader.upload("files/169419254022327ab7504-14d2-4235-9bae-78e76db3608c.jpeg")
+    .then(result => console.log(result));
+
+ */
 
 
 app.use('/', require('./routes/posts'));

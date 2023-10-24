@@ -1,6 +1,7 @@
 const Posts = require('../models/Post');
 const Followers = require('../models/Followers');
-
+const Photo = require('../models/Photo');
+const { listeners } = require('../models/Users');
 const getPaginatedPosts = async (req, res) => {
 
     const page = parseInt(req.params.page);
@@ -14,7 +15,7 @@ const getPaginatedPosts = async (req, res) => {
     const totalPages = parseInt((totalPosts / postsInPage)) + extraPage;
     console.log(totalPages)
 
-    if (page > totalPages || page <= 0) {
+    if (page >= totalPages || page <= 0) {
         return res.status(404).json({
             end: true,
             error: true,
@@ -32,28 +33,43 @@ const getPaginatedPosts = async (req, res) => {
     let followingIDs = [];
     following.map(item => followingIDs.push(item.following));
 
-    const fetchedPosts = await Posts.find({ userID: { $in: followingIDs } }).skip(indexToSkip).limit(postsInPage);
+    let fetchedPosts = await Posts.find({ userID: { $in: followingIDs } }).skip(indexToSkip).limit(postsInPage);
 
     // const fetchedPosts = await Posts.find({ userID: { $in: followingIDs.following } })
 
     // const fetchedPosts = await Posts.find({ userID: followingIDs.following })
 
-    console.log(fetchedPosts)
+    console.log(await fetchedPosts + " line 41");
 
-    if (await fetchedPosts.length === 0) {
-        return res.status(404).json({
-            end: true,
-            error: true,
-            message: 'page not found'
+    try {
+        let resData = [];
+
+        for (const item of fetchedPosts) {
+            let obj = item;
+            obj.imageUrl = [];
+            const foundImages = await Photo.find({ $and: [{ userID: item.userID }, { postId: item.postId }] });
+            foundImages.forEach(img => obj.imageUrl.push(img.imageUrl));
+            resData.push(obj);
+        };
+
+        if (await fetchedPosts.length === 0) {
+            return res.status(404).json({
+                end: true,
+                error: true,
+                message: 'page not found'
+            })
+        }
+
+        return res.status(200).json({
+            total: totalPosts,
+            pages: totalPages,
+            requested_page: page,
+            data: resData
         })
     }
-
-    return res.status(200).json({
-        total: totalPosts,
-        pages: totalPages,
-        requested_page: page,
-        data: await fetchedPosts
-    })
+    catch (error) {
+        console.log(error);
+    }
 }
 
 

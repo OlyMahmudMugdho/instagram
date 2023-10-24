@@ -5,6 +5,6 @@ const verifyAccessToken = require('../middlewares/verifyAccessToken');
 const verifyJWT = require('../middlewares/verifyJWT');
 
 router.route('/search')
-    .get(checkJWT.check, verifyAccessToken.verifyAccess, searchController.search)
+    .get(verifyAccessToken.verifyAccess, searchController.search)
 
 module.exports = router

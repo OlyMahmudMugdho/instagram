@@ -54,7 +54,7 @@ const addComment = async (req, res) => {
 
         await newComment.save();
 
-        foundPost.comments = await foundPost.comments + 1;
+        foundPost.comments = parseInt(await foundPost.comments) + 1;
         foundPost.save();
 
         return res.status(200).json({

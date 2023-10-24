@@ -1,5 +1,7 @@
 const Followers = require('../models/Followers');
 const Post = require('../models/Post');
+const Photo = require('../models/Photo');
+
 
 const getSinglePost = async (req, res) => {
     const userID = req.params.postUserID;
@@ -33,10 +35,28 @@ const getSinglePost = async (req, res) => {
         });
     }
 
-    return res.status(200).json({
-        success: true,
-        data: foundPost
-    });
+    try {
+
+        let obj = await foundPost;
+
+        console.log(obj);
+
+        obj.imageUrl = [];
+
+        const foundImages = await Photo.find({ $and: [{ userID: userID }, { postId: postId }] });
+        console.log(await foundImages);
+        foundImages.forEach(img => obj.imageUrl.push(img.imageUrl));
+
+        return res.status(200).json({
+            success: true,
+            data: obj
+        });
+    }
+    catch (error) {
+        console.log(error)
+    }
+
+
 }
 
 module.exports = {

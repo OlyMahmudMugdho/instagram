@@ -36,6 +36,7 @@ const editPost = async (req, res) => {
     await foundPost.save();
 
     return res.status(200).json({
+        success : true,
         data: foundPost
     })
 }
