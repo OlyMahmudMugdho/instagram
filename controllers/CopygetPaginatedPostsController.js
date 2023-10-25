@@ -21,11 +21,11 @@ const getPaginatedPosts = async (req, res) => {
 
     let extraPage;
 
-    ((await totalPosts % postsInPage) == 0) ? extraPage = 0 : extraPage = 1;
+    (((await totalPosts) % postsInPage) == 0) ? extraPage = 0 : extraPage = 1;
 
     
 
-    const totalPages = parseInt((await totalPosts / postsInPage)) + extraPage;
+    const totalPages = parseInt((await totalPosts / postsInPage)) + await extraPage;
     console.log(totalPages)
 
     if ((page >= (await totalPages)) || (page <= 0)) {
