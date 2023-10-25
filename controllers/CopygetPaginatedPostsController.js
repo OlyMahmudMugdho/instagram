@@ -28,7 +28,7 @@ const getPaginatedPosts = async (req, res) => {
     const totalPages = parseInt((await totalPosts / postsInPage)) + extraPage;
     console.log(totalPages)
 
-    if (page >= await totalPages || page <= 0) {
+    if ((page >= (await totalPages)) || (page <= 0)) {
         return res.status(404).json({
             end: true,
             error: true,
