@@ -16,7 +16,7 @@ const uuid = require('uuid');
 const path = require('path');
 const myPostsController = require('../controllers/getMyPostController');
 const getPaginatedPostsController = require('../controllers/getPaginatedPostsController');
-
+const CopygetPaginatedPostsController = require('../controllers/CopygetPaginatedPostsController');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -46,6 +46,9 @@ router.route('/posts/myposts')
 
 router.route('/posts/:page')
     .get(checkJWT.check, verifyAccessToken.verifyAccess, getPaginatedPostsController.getPaginatedPosts)
+
+router.route('/posts/:page/experimental')
+    .get(checkJWT.check, verifyAccessToken.verifyAccess, CopygetPaginatedPostsController.getPaginatedPosts)
 
 router.route('/posts/:postUserID/:postId')
     .get(checkJWT.check, verifyAccessToken.verifyAccess, getSinglePostController.getSinglePost)
