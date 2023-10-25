@@ -27,7 +27,7 @@ const getPaginatedPosts = async (req, res) => {
 
     const totalPages = parseInt((totalPosts / postsInPage)) + extraPage;
     console.log(totalPages)
-/*
+/* 
     if (page >= totalPages || page <= 0) {
         return res.status(404).json({
             end: true,
@@ -35,7 +35,7 @@ const getPaginatedPosts = async (req, res) => {
             message: 'page not found'
         })
     }
-*/
+ */
     const lastIndex = page * postsInPage;
     const startingIndex = (lastIndex - postsInPage) + 1;
     const indexToSkip = startingIndex - 1;
@@ -52,12 +52,12 @@ const getPaginatedPosts = async (req, res) => {
     try {
         let resData = [];
 
-        for (const item of fetchedPosts) {
+        for (const item of await fetchedPosts) {
             let obj = item;
             obj.imageUrl = [];
             const foundImages = await Photo.find({ $and: [{ userID: item.userID }, { postId: item.postId }] });
-            foundImages.forEach(img => obj.imageUrl.push(img.imageUrl));
-            resData.push(obj);
+            await foundImages.forEach(async img => await obj.imageUrl.push(await img.imageUrl));
+            await resData.push(await obj);
         };
 
        /*  if (await fetchedPosts.length === 0) {
@@ -72,7 +72,7 @@ const getPaginatedPosts = async (req, res) => {
             total: totalPosts,
             pages: totalPages,
             requested_page: page,
-            data: resData
+            data: await resData
         })
     }
     catch (error) {
