@@ -21,21 +21,21 @@ const getPaginatedPosts = async (req, res) => {
 
     let extraPage;
 
-    ((totalPosts % postsInPage) == 0) ? extraPage = 0 : extraPage = 1;
+    ((await totalPosts % postsInPage) == 0) ? extraPage = 0 : extraPage = 1;
 
     
 
-    const totalPages = parseInt((totalPosts / postsInPage)) + extraPage;
+    const totalPages = parseInt((await totalPosts / postsInPage)) + extraPage;
     console.log(totalPages)
-/* 
-    if (page >= totalPages || page <= 0) {
+
+    if (page >= await totalPages || page <= 0) {
         return res.status(404).json({
             end: true,
             error: true,
             message: 'page not found'
         })
     }
- */
+
     const lastIndex = page * postsInPage;
     const startingIndex = (lastIndex - postsInPage) + 1;
     const indexToSkip = startingIndex - 1;
@@ -60,17 +60,17 @@ const getPaginatedPosts = async (req, res) => {
             await resData.push(await obj);
         };
 
-       /*  if (await fetchedPosts.length === 0) {
+        if (await resData.length === 0) {
             return res.status(404).json({
                 end: true,
                 error: true,
                 message: 'page not found'
             })
-        } */
+        }
 
         return res.status(200).json({
-            total: totalPosts,
-            pages: totalPages,
+            total: await totalPosts,
+            pages: await totalPages,
             requested_page: page,
             data: await resData
         })
