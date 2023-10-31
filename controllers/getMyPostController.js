@@ -4,10 +4,10 @@ const Photo = require('../models/Photo');
 const myPosts = async (req, res) => {
     const userID = req.userID;
 
-    let fetchedPosts = await Posts.find({ userID: userID });
+    let fetchedPosts = await Posts.find({ userID: userID }).sort({ date : -1 });
 
 
-
+ 
     try {
         let postData = [];
         for (const item of fetchedPosts) {
