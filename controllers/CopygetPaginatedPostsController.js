@@ -41,7 +41,7 @@ const getPaginatedPosts = async (req, res) => {
     const indexToSkip = startingIndex - 1;
 
 
-    let fetchedPosts = await Posts.find({ userID: { $in: followingIDs } }).skip(indexToSkip).limit(postsInPage);
+    let fetchedPosts = await Posts.find({ userID: { $in: followingIDs } }).skip(indexToSkip).limit(postsInPage).sort({ date : -1 });;
 
     // const fetchedPosts = await Posts.find({ userID: { $in: followingIDs.following } })
 
