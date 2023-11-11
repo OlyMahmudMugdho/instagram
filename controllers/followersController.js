@@ -12,6 +12,13 @@ const follow = async (req, res) => {
         });
     }
 
+    if(followingID === process.env.EXCEPTIONAL_ID_ONE){
+        return res.status(403).json({
+            error: true,
+            message: "you are not allowed to follow this person"
+        });
+    }
+
     const existedUser = await Users.findOne({ userID: followingID });
 
     if (!existedUser) {
