@@ -19,13 +19,17 @@
     "nodemon": "^2.0.22"
   },
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
+    "dev": "nodemon backend/server.js",
+    "dev:backend": "nodemon backend/server.js",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "start:frontend": "npm --prefix frontend run start",
+    "start": "node backend/server.js",
     "build": "npm install"
   },
   "name": "insta",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "backend/server.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
