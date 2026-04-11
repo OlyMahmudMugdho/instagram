@@ -23,7 +23,7 @@ export const endpoints = {
   users: {
     profile: (userId: string) => `/users/${userId}`,
     me: '/users/me',
-    edit: '/users/edit',
+    edit: '/users/profile/edit',
     profilePicture: '/users/profilePicture',
     follow: (userId: string) => `/follow/${userId}`,
     unfollow: (userId: string) => `/unfollow/${userId}`,

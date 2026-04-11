@@ -24,26 +24,53 @@ export interface AuthResponse {
     avatar?: string;
   };
   token?: string;
+  accessToken?: string;
   data?: Array<{ userID?: string }>;
   refreshToken?: string;
 }
 
 export const authService = {
+  getAccessToken: async (): Promise<AuthResponse> => {
+    try {
+      const res = await http.get<AuthResponse>('/token');
+      if (res.success && res.accessToken) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', res.accessToken);
+        }
+        return res;
+      }
+      throw new Error(res.message || 'Failed to get access token');
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+      }
+      throw error;
+    }
+  },
+
   login: async (data: LoginRequest): Promise<AuthResponse> => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+    }
     const res = await http.post<AuthResponse>(endpoints.auth.login, { body: data });
-    if (res.success && res.data && res.data[0]) {
-      const userID = res.data[0].userID;
-      return {
-        success: true,
-        message: res.message,
-        user: {
-          _id: userID || '',
-          email: '',
-          username: data.username || '',
-          name: '',
-        },
-        token: res.refreshToken,
-      };
+    if (res.success) {
+      // After login, we need to get an access token because the login 
+      // response might only contain the refresh token cookie.
+      try {
+        const tokenRes = await authService.getAccessToken();
+        if (tokenRes.success && tokenRes.user) {
+          return {
+            ...res,
+            user: {
+              ...tokenRes.user,
+              email: '', // Backend login doesn't return email, /token might not either
+              name: '',
+            }
+          };
+        }
+      } catch (e) {
+        console.error('Failed to get access token after login:', e);
+      }
     }
     return res;
   },
@@ -53,11 +80,18 @@ export const authService = {
   },
 
   logout: async (): Promise<AuthResponse> => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+    }
     return http.post<AuthResponse>(endpoints.auth.logout);
   },
 
   getToken: async (): Promise<AuthResponse> => {
     try {
+      // First, ensure we have a valid access token
+      await authService.getAccessToken();
+      
+      // Then fetch the full user profile
       const res = await http.get<AuthResponse>('/users/me');
       if (res.success && res.user) {
         return res;

@@ -89,8 +89,8 @@ app.use('/', require('./routes/follow'));
 app.use('/', require('./routes/comment'));
 app.use('/', require('./routes/feed'));
 app.use('/', require('./routes/resetPassword'));
-app.use('/', require('./routes/users'));
 app.use('/', require('./routes/usersMe'));
+app.use('/', require('./routes/users'));
 app.use('/', require('./routes/search'));
 app.use('/', require('./routes/helper'))
 
