@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import type { MenuProps } from "antd";
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Typography, Spin, Grid } from "antd";
 import { HomeOutlined, UserOutlined, LogoutOutlined, PlusOutlined } from "@ant-design/icons";
 import { useAuth } from "@/lib/auth-context";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
+import { LogoutTransition } from "@/components/auth/logout-transition";
 
 const { Header, Content, Sider } = Layout;
 const { Text } = Typography;
@@ -23,10 +25,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const screens = useBreakpoint();
+  const [logoutPending, setLogoutPending] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [user, loading, router]);
 
@@ -46,19 +49,28 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    setLogoutPending(true);
   };
 
-  const userMenu = {
+  const userMenu: MenuProps = {
     items: [
-      { key: "profile", label: "My Profile", onClick: () => router.push("/profile") },
-      { key: "logout", icon: <LogoutOutlined />, label: "Logout", onClick: handleLogout },
+      { key: "profile", label: "My Profile" },
+      { key: "logout", icon: <LogoutOutlined />, label: "Logout", danger: true },
     ],
+    onClick: ({ key }) => {
+      if (key === "profile") {
+        router.push("/profile");
+      }
+      if (key === "logout") {
+        void handleLogout();
+      }
+    },
   };
 
   return (
     <AntdRegistry>
       <ConfigProvider>
+        <LogoutTransition active={logoutPending} />
         <Layout style={{ minHeight: "100vh" }}>
           <Header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", background: "#fff", borderBottom: "1px solid #f0f0f0", flexWrap: "wrap" }}>
             <Text strong style={{ fontSize: 18, cursor: "pointer" }} onClick={() => router.push("/feed")}>

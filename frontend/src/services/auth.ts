@@ -1,4 +1,4 @@
-import { http } from '@/lib/api/http';
+import { ApiError, http } from '@/lib/api/http';
 import { endpoints } from '@/lib/api/endpoints';
 
 export interface LoginRequest {
@@ -44,6 +44,9 @@ export const authService = {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
       }
+      if (error instanceof ApiError && error.status === 403 && error.message === 'no refresh token') {
+        return { success: false, message: 'Not authenticated' };
+      }
       throw error;
     }
   },
@@ -83,13 +86,15 @@ export const authService = {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
     }
-    return http.post<AuthResponse>(endpoints.auth.logout);
+    return http.get<AuthResponse>('/logout');
   },
 
   getToken: async (): Promise<AuthResponse> => {
     try {
-      // First, ensure we have a valid access token
-      await authService.getAccessToken();
+      const tokenRes = await authService.getAccessToken();
+      if (!tokenRes.success) {
+        return { success: false, message: 'Not authenticated' };
+      }
       
       // Then fetch the full user profile
       const res = await http.get<AuthResponse>('/users/me');

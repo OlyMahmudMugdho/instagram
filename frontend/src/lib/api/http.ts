@@ -43,13 +43,24 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     throw new ApiError(0, 'Failed to connect to server');
   }
 
+  const rawBody = await response.text();
+  const parsedBody = rawBody
+    ? (() => {
+        try {
+          return JSON.parse(rawBody);
+        } catch {
+          return rawBody;
+        }
+      })()
+    : undefined;
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
+    const error = parsedBody && typeof parsedBody === 'object' ? parsedBody : { message: 'Request failed' };
     console.error('Response error:', response.status, error);
     throw new ApiError(response.status, error.message || 'Request failed');
   }
 
-  return response.json();
+  return (parsedBody ?? {}) as T;
 }
 
 export const http = {
