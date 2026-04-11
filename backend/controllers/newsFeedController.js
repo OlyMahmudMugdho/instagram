@@ -14,6 +14,7 @@ const getFeed = async (req, res) => {
             const photo = await Photos.findOne({ postId: post.postId });
             return {
                 _id: post._id,
+                postId: post.postId,
                 userId: post.userID,
                 username: post.author,
                 avatar: '',

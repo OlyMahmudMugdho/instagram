@@ -4,17 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, Avatar, Button, Space, Typography, Spin, List, Input, Image } from "antd";
 import { HeartOutlined, HeartFilled, SendOutlined, UserOutlined } from "@ant-design/icons";
-import { postsService, Post } from "@/services/posts";
+import { postsService, Post, Comment, commentsService } from "@/services/posts";
 
 const { Title, Text, Paragraph } = Typography;
-
-interface Comment {
-  _id: string;
-  userId: string;
-  username: string;
-  text: string;
-  createdAt: string;
-}
 
 export default function PostPage() {
   const params = useParams();
@@ -36,6 +28,7 @@ export default function PostPage() {
       const res = await postsService.getPost(postId);
       if (res.success && res.post) {
         setPost(res.post);
+        loadComments(res.post.userId, res.post.postId);
       }
     } catch (error) {
       console.error(error);
@@ -44,13 +37,24 @@ export default function PostPage() {
     }
   };
 
+  const loadComments = async (userId: string, postId: string) => {
+    try {
+      const res = await commentsService.getComments(userId, postId);
+      if (res.success && res.comments) {
+        setComments(res.comments);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleLike = async () => {
     if (!post) return;
     try {
       if (post.isLiked) {
-        await postsService.unlikePost(postId);
+        await postsService.unlikePost(post.userId, post.postId);
       } else {
-        await postsService.likePost(postId);
+        await postsService.likePost(post.userId, post.postId);
       }
       setPost({ ...post, isLiked: !post.isLiked, likes: post.isLiked ? post.likes - 1 : post.likes + 1 });
     } catch (error) {
@@ -59,10 +63,14 @@ export default function PostPage() {
   };
 
   const handleComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !post) return;
     try {
-      // TODO: Implement comment service
-      setNewComment("");
+      const res = await commentsService.addComment(post.userId, post.postId, newComment);
+      if (res.success) {
+        setNewComment("");
+        loadComments(post.userId, post.postId);
+        setPost({ ...post, comments: post.comments + 1 });
+      }
     } catch (error) {
       console.error(error);
     }
@@ -112,7 +120,7 @@ export default function PostPage() {
       <Card title="Comments" style={{ marginTop: 16 }}>
         <List
           dataSource={comments}
-          renderItem={(comment) => (
+          renderItem={(comment: Comment) => (
             <List.Item>
               <Space>
                 <Avatar size="small" icon={<UserOutlined />} />

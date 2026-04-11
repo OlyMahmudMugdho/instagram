@@ -33,15 +33,15 @@ export default function FeedPage() {
     }
   };
 
-  const handleLike = async (postId: string, isLiked: boolean) => {
+  const handleLike = async (postUserId: string, postId: string, isLiked: boolean) => {
     try {
       if (isLiked) {
-        await postsService.unlikePost(postId);
+        await postsService.unlikePost(postUserId, postId);
       } else {
-        await postsService.likePost(postId);
+        await postsService.likePost(postUserId, postId);
       }
       setPosts(posts.map(p => 
-        p._id === postId 
+        p.postId === postId 
           ? { ...p, isLiked: !isLiked, likes: isLiked ? p.likes - 1 : p.likes + 1 }
           : p
       ));
@@ -111,7 +111,7 @@ export default function FeedPage() {
                 icon={post.isLiked ? <HeartFilled style={{ color: "#ff4d4f" }} /> : <HeartOutlined />}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleLike(post._id, !!post.isLiked);
+                  handleLike(post.userId, post.postId, !!post.isLiked);
                 }}
               >
                 {post.likes}

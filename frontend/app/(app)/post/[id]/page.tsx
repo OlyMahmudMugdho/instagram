@@ -4,17 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, Avatar, Button, Space, Typography, Spin, List, Input } from "antd";
 import { HeartOutlined, HeartFilled, SendOutlined, UserOutlined } from "@ant-design/icons";
-import { postsService, Post } from "@/services/posts";
+import { postsService, Post, Comment, commentsService } from "@/services/posts";
 
 const { Title, Text, Paragraph } = Typography;
-
-interface Comment {
-  _id: string;
-  userId: string;
-  username: string;
-  text: string;
-  createdAt: string;
-}
 
 export default function PostPage() {
   const params = useParams();
@@ -36,6 +28,7 @@ export default function PostPage() {
       const res = await postsService.getPost(postId);
       if (res.success && res.post) {
         setPost(res.post);
+        loadComments(res.post.userId, res.post.postId);
       }
     } catch (error) {
       console.error(error);
@@ -44,13 +37,24 @@ export default function PostPage() {
     }
   };
 
+  const loadComments = async (userId: string, postId: string) => {
+    try {
+      const res = await commentsService.getComments(userId, postId);
+      if (res.success && res.comments) {
+        setComments(res.comments);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleLike = async () => {
     if (!post) return;
     try {
       if (post.isLiked) {
-        await postsService.unlikePost(postId);
+        await postsService.unlikePost(post.userId, post.postId);
       } else {
-        await postsService.likePost(postId);
+        await postsService.likePost(post.userId, post.postId);
       }
       setPost({ ...post, isLiked: !post.isLiked, likes: post.isLiked ? post.likes - 1 : post.likes + 1 });
     } catch (error) {
@@ -59,8 +63,17 @@ export default function PostPage() {
   };
 
   const handleComment = async () => {
-    if (!newComment.trim()) return;
-    setNewComment("");
+    if (!newComment.trim() || !post) return;
+    try {
+      const res = await commentsService.addComment(post.userId, post.postId, newComment);
+      if (res.success) {
+        setNewComment("");
+        loadComments(post.userId, post.postId);
+        setPost({ ...post, comments: (post.comments || 0) + 1 });
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   if (loading) {
@@ -80,17 +93,21 @@ export default function PostPage() {
       <Card>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <Avatar src={post.avatar} icon={!post.avatar && <UserOutlined />} />
-          <Text strong>{post.username}</Text>
-          <Text type="secondary">{new Date(post.createdAt).toLocaleDateString()}</Text>
+          <div style={{ flex: 1 }}>
+            <Text strong>{post.username}</Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>{new Date(post.createdAt).toLocaleDateString()}</Text>
+          </div>
         </div>
 
         {post.image && (
-          <img src={post.image} alt={post.title} style={{ width: "100%", borderRadius: 4, display: "block" }} />
+          <div style={{ margin: "16px -24px" }}>
+            <img src={post.image} alt={post.title} style={{ width: "100%", display: "block" }} />
+          </div>
         )}
 
         <div style={{ marginTop: 16 }}>
           <Title level={4} style={{ margin: 0 }}>{post.title}</Title>
-          {post.description && <Paragraph>{post.description}</Paragraph>}
+          {post.description && <Paragraph style={{ marginTop: 8 }}>{post.description}</Paragraph>}
         </div>
 
         <Space style={{ marginTop: 12 }}>
@@ -107,12 +124,17 @@ export default function PostPage() {
       <Card title="Comments" style={{ marginTop: 16 }}>
         <List
           dataSource={comments}
-          renderItem={(comment) => (
+          renderItem={(comment: Comment) => (
             <List.Item>
-              <Space>
+              <Space align="start">
                 <Avatar size="small" icon={<UserOutlined />} />
-                <Text strong>{comment.username}</Text>
-                <Text>{comment.text}</Text>
+                <div>
+                  <Text strong>{comment.username}</Text>
+                  <Paragraph style={{ margin: 0 }}>{comment.text}</Paragraph>
+                  <Text type="secondary" style={{ fontSize: 11 }}>
+                    {new Date(comment.createdAt).toLocaleDateString()}
+                  </Text>
+                </div>
               </Space>
             </List.Item>
           )}

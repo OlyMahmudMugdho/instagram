@@ -27,6 +27,7 @@ const getSinglePost = async (req, res) => {
             success: true,
             post: {
                 _id: foundPost._id,
+                postId: foundPost.postId,
                 userId: foundPost.userID,
                 username: foundPost.author,
                 avatar: '',

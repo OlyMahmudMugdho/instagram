@@ -3,6 +3,7 @@ import { endpoints } from '@/lib/api/endpoints';
 
 export interface Post {
   _id: string;
+  postId: string;
   userId: string;
   username: string;
   avatar?: string;
@@ -54,11 +55,54 @@ export const postsService = {
     return http.delete<PostResponse>(endpoints.posts.delete(id));
   },
 
-  likePost: async (id: string): Promise<PostResponse> => {
-    return http.post<PostResponse>(endpoints.posts.like(id));
+  likePost: async (userId: string, postId: string): Promise<PostResponse> => {
+    return http.get<PostResponse>(endpoints.posts.like(userId, postId));
   },
 
-  unlikePost: async (id: string): Promise<PostResponse> => {
-    return http.post<PostResponse>(endpoints.posts.unlike(id));
+  unlikePost: async (userId: string, postId: string): Promise<PostResponse> => {
+    return http.get<PostResponse>(endpoints.posts.unlike(userId, postId));
+  },
+};
+
+export interface Comment {
+  _id: string;
+  commentID: string;
+  commentor: string;
+  username: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface CommentsResponse {
+  success: boolean;
+  comments?: Comment[];
+  message?: string;
+}
+
+export const commentsService = {
+  getComments: async (userId: string, postId: string): Promise<CommentsResponse> => {
+    try {
+      const res = await http.get<{ success: boolean; data: any[] }>(endpoints.comments.list(userId, postId));
+      if (res.success && Array.isArray(res.data)) {
+          return {
+              success: true,
+              comments: res.data.map((c: any) => ({
+                  _id: c._id,
+                  commentID: c.commentID,
+                  commentor: c.commentor,
+                  username: 'User', // Backend doesn't return username in comment
+                  text: c.comment,
+                  createdAt: c.date
+              }))
+          };
+      }
+      return { success: false, message: 'Failed to load comments' };
+    } catch (e) {
+      return { success: false, message: 'Error loading comments' };
+    }
+  },
+
+  addComment: async (userId: string, postId: string, comment: string): Promise<{ success: boolean; message?: string }> => {
+    return http.post(endpoints.comments.create(userId, postId), { body: { comment } });
   },
 };
