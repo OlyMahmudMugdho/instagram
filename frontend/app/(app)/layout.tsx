@@ -72,7 +72,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <ConfigProvider>
         <LogoutTransition active={logoutPending} />
         <Layout style={{ minHeight: "100vh" }}>
-          <Header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", background: "#fff", borderBottom: "1px solid #f0f0f0", flexWrap: "wrap" }}>
+          <Header style={{ 
+            position: 'fixed', 
+            zIndex: 1001, 
+            width: '100%',
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "space-between", 
+            padding: "0 16px", 
+            background: "#fff", 
+            borderBottom: "1px solid #f0f0f0", 
+            flexWrap: "wrap" 
+          }}>
             <Text strong style={{ fontSize: 18, cursor: "pointer" }} onClick={() => router.push("/feed")}>
               Instagram
             </Text>
@@ -95,9 +106,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             )}
           </Header>
 
-          <Layout>
+          <Layout style={{ marginTop: 64 }}>
             {screens.md && (
-              <Sider width={200} style={{ background: "#fff", paddingTop: 16 }}>
+              <Sider 
+                width={200} 
+                style={{ 
+                  overflow: 'auto',
+                  height: 'calc(100vh - 64px)',
+                  position: 'fixed',
+                  left: 0,
+                  top: 64,
+                  bottom: 0,
+                  background: "#fff", 
+                  paddingTop: 16,
+                  borderRight: "1px solid #f0f0f0"
+                }}
+              >
                 <Menu
                   mode="inline"
                   selectedKeys={[pathname]}
@@ -112,7 +136,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Sider>
             )}
 
-            <Layout style={{ padding: screens.md ? "24px 16px" : "16px" }}>
+            <Layout style={{ 
+              padding: screens.md ? "24px 16px" : "16px",
+              marginLeft: screens.md ? 200 : 0,
+              minHeight: 'calc(100vh - 64px)'
+            }}>
               <Content style={{ background: "#fff", padding: screens.md ? 24 : 12, minHeight: 280 }}>
                 {children}
               </Content>
