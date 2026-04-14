@@ -99,16 +99,15 @@ export default function PostPage() {
           </div>
         </div>
 
+        <div style={{ marginBottom: 16 }}>
+          <Paragraph style={{ fontSize: 18, margin: 0 }}>{post.title}</Paragraph>
+        </div>
+
         {post.image && (
           <div style={{ margin: "16px -24px" }}>
             <img src={post.image} alt={post.title} style={{ width: "100%", display: "block" }} />
           </div>
         )}
-
-        <div style={{ marginTop: 16 }}>
-          <Title level={4} style={{ margin: 0 }}>{post.title}</Title>
-          {post.description && <Paragraph style={{ marginTop: 8 }}>{post.description}</Paragraph>}
-        </div>
 
         <Space style={{ marginTop: 12 }}>
           <Button

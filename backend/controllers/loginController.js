@@ -58,15 +58,19 @@ const handleLogin = async (req, res) => {
     return res.status(200).cookie(
         'jwt',
         refreshToken,
-        { httpOnly: true, secure: true, sameSite: 'none', maxAge: 60 * 60 * 1000 }
+        { httpOnly: true, secure: true, sameSite: 'none', maxAge: 3 * 24 * 60 * 60 * 1000 }
     ).json(
         {
             success: true,
-            "refreshToken": refreshToken,
-            "message": "logged in",
-            data: [
-                { userID: await foundUser.userID }
-            ]
+            refreshToken: refreshToken,
+            message: "logged in",
+            user: {
+                _id: foundUser.userID,
+                username: foundUser.username,
+                name: foundUser.name,
+                email: foundUser.email,
+                avatar: foundUser.profilePicture || ''
+            }
         }
     )
 }

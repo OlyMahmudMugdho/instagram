@@ -88,6 +88,10 @@ export default function FeedPage() {
               description={new Date(post.createdAt).toLocaleDateString()}
             />
             
+            <div style={{ marginTop: 12 }}>
+              <Paragraph style={{ fontSize: 16, margin: 0 }}>{post.title}</Paragraph>
+            </div>
+            
             {post.image && (
               <div style={{ margin: "12px 0" }}>
                 <img 
@@ -98,14 +102,7 @@ export default function FeedPage() {
               </div>
             )}
             
-            <div style={{ marginTop: 12 }}>
-              <Title level={5} style={{ margin: 0 }}>{post.title}</Title>
-              {post.description && (
-                <Paragraph style={{ marginTop: 8 }}>{post.description}</Paragraph>
-              )}
-            </div>
-            
-            <Space style={{ marginTop: 12 }}>
+            <Space style={{ marginTop: 8 }}>
               <Button 
                 type="text" 
                 icon={post.isLiked ? <HeartFilled style={{ color: "#ff4d4f" }} /> : <HeartOutlined />}

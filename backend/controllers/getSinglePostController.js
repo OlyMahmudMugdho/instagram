@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const Users = require('../models/Users');
 const Photo = require('../models/Photo');
 
 const getSinglePost = async (req, res) => {
@@ -20,8 +21,16 @@ const getSinglePost = async (req, res) => {
                 message: "post not found"
             });
         }
+
+        const user = await Users.findOne({ userID: foundPost.userID });
+        const photo = await Photo.findOne({ postId: foundPost.postId });
         
-        const photos = await Photo.find({ postId: foundPost.postId });
+        let displayImage = '';
+        if (photo && photo.imageUrl && photo.imageUrl.startsWith('http')) {
+            displayImage = photo.imageUrl;
+        } else if (foundPost.imageUrl && foundPost.imageUrl.length > 0) {
+            displayImage = foundPost.imageUrl[0];
+        }
         
         return res.status(200).json({
             success: true,
@@ -29,9 +38,9 @@ const getSinglePost = async (req, res) => {
                 _id: foundPost._id,
                 postId: foundPost.postId,
                 userId: foundPost.userID,
-                username: foundPost.author,
-                avatar: '',
-                image: photos[0]?.imageUrl || '',
+                username: user?.username || foundPost.author,
+                avatar: user?.profilePicture || '',
+                image: displayImage,
                 title: foundPost.content,
                 description: '',
                 likes: foundPost.likes,
@@ -41,6 +50,7 @@ const getSinglePost = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error("Single post error:", error);
         return res.status(500).json({
             success: false,
             message: error.message
