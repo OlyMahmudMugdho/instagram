@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Providers } from "@/app/providers";
+import { Providers } from "@/../src/app/providers";
 
 export const metadata: Metadata = {
   title: "Instagram Clone",

@@ -29,8 +29,7 @@ export interface PostResponse {
 }
 
 export interface CreatePostRequest {
-  title: string;
-  description?: string;
+  content: string;
   image?: string;
 }
 
@@ -47,12 +46,12 @@ export const postsService = {
     return http.post<PostResponse>(endpoints.posts.create, { body: data });
   },
 
-  editPost: async (id: string, data: Partial<CreatePostRequest>): Promise<PostResponse> => {
-    return http.put<PostResponse>(endpoints.posts.edit(id), { body: data });
+  editPost: async (userId: string, postId: string, data: { content: string }): Promise<PostResponse> => {
+    return http.put<PostResponse>(endpoints.posts.edit(userId, postId), { body: data });
   },
 
-  deletePost: async (id: string): Promise<PostResponse> => {
-    return http.delete<PostResponse>(endpoints.posts.delete(id));
+  deletePost: async (userId: string, postId: string): Promise<PostResponse> => {
+    return http.delete<PostResponse>(endpoints.posts.delete(userId, postId));
   },
 
   likePost: async (userId: string, postId: string): Promise<PostResponse> => {

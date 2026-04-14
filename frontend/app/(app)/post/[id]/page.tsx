@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Card, Avatar, Button, Space, Typography, Spin, List, Input } from "antd";
-import { HeartOutlined, HeartFilled, SendOutlined, UserOutlined } from "@ant-design/icons";
+import { Card, Avatar, Button, Space, Typography, Spin, List, Input, Dropdown, MenuProps, Modal, message } from "antd";
+import { HeartOutlined, HeartFilled, SendOutlined, UserOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { postsService, Post, Comment, commentsService } from "@/services/posts";
+import { useAuth } from "@/lib/auth-context";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -12,11 +13,14 @@ export default function PostPage() {
   const params = useParams();
   const router = useRouter();
   const postId = params.id as string;
+  const { user } = useAuth();
   
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editContent, setEditContent] = useState("");
 
   useEffect(() => {
     loadPost();
@@ -76,6 +80,52 @@ export default function PostPage() {
     }
   };
 
+  const handleDelete = () => {
+    if (!post) return;
+    Modal.confirm({
+      title: 'Are you sure you want to delete this post?',
+      content: 'This action cannot be undone.',
+      okText: 'Yes, Delete',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: async () => {
+        try {
+          const res = await postsService.deletePost(post.userId, post.postId);
+          if (res.success) {
+            message.success("Post deleted successfully");
+            router.push("/feed");
+          } else {
+            message.error(res.message || "Failed to delete post");
+          }
+        } catch (error) {
+          message.error("Failed to delete post");
+        }
+      },
+    });
+  };
+
+  const handleEdit = () => {
+    if (!post) return;
+    setEditContent(post.title);
+    setEditModalVisible(true);
+  };
+
+  const saveEdit = async () => {
+    if (!post) return;
+    try {
+      const res = await postsService.editPost(post.userId, post.postId, { content: editContent });
+      if (res.success) {
+        message.success("Post updated successfully");
+        setPost({ ...post, title: editContent });
+        setEditModalVisible(false);
+      } else {
+        message.error(res.message || "Failed to update post");
+      }
+    } catch (error) {
+      message.error("Failed to update post");
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 400 }}>
@@ -88,15 +138,38 @@ export default function PostPage() {
     return <Text>Post not found</Text>;
   }
 
+  const isOwner = user?._id === post.userId;
+  const menuItems: MenuProps['items'] = [
+    { key: 'edit', icon: <EditOutlined />, label: 'Edit' },
+    { key: 'delete', icon: <DeleteOutlined />, label: 'Delete', danger: true },
+  ];
+
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 16px" }}>
       <Card>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <Avatar src={post.avatar} icon={!post.avatar && <UserOutlined />} />
-          <div style={{ flex: 1 }}>
-            <Text strong>{post.username}</Text>
-            <Text type="secondary" style={{ fontSize: 12 }}>{new Date(post.createdAt).toLocaleDateString()}</Text>
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <Space>
+            <Avatar src={post.avatar} icon={!post.avatar && <UserOutlined />} />
+            <div>
+              <Text strong style={{ display: 'block' }}>{post.username}</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>{new Date(post.createdAt).toLocaleDateString()}</Text>
+            </div>
+          </Space>
+          
+          {isOwner && (
+            <Dropdown 
+              menu={{ 
+                items: menuItems,
+                onClick: ({ key }) => {
+                  if (key === 'edit') handleEdit();
+                  if (key === 'delete') handleDelete();
+                }
+              }} 
+              trigger={['click']}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          )}
         </div>
 
         <div style={{ marginBottom: 16 }}>
@@ -119,6 +192,21 @@ export default function PostPage() {
           </Button>
         </Space>
       </Card>
+
+      <Modal
+        title="Edit Post"
+        open={editModalVisible}
+        onOk={saveEdit}
+        onCancel={() => setEditModalVisible(false)}
+        okText="Save"
+      >
+        <Input.TextArea
+          rows={4}
+          value={editContent}
+          onChange={(e) => setEditContent(e.target.value)}
+          placeholder="What's on your mind?"
+        />
+      </Modal>
 
       <Card title="Comments" style={{ marginTop: 16 }}>
         <List
