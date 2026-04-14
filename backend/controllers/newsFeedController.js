@@ -1,22 +1,31 @@
 const Posts = require('../models/Post');
 const Users = require('../models/Users');
 const Photo = require('../models/Photo');
+const Friend = require('../models/Friend');
 
 const getFeed = async (req, res) => {
+    const userID = req.userID;
     try {
-        const foundPosts = await Posts.find().sort({ date: -1 }).limit(50);
+        const friends = await Friend.find({
+            $or: [{ sender: userID }, { receiver: userID }],
+            status: 'accepted'
+        });
+        const friendIDs = friends.map(f => f.sender === userID ? f.receiver : f.sender);
+        
+        // Show only friends' posts + own posts
+        const allowedIDs = [...friendIDs, userID];
+        
+        const foundPosts = await Posts.find({ userID: { $in: allowedIDs } }).sort({ date: -1 }).limit(50);
         
         const posts = await Promise.all(foundPosts.map(async (post) => {
             const user = await Users.findOne({ userID: post.userID });
             
-            // Check for Cloudinary URL in Photo collection first
             const photo = await Photo.findOne({ postId: post.postId });
             let displayImage = '';
             
             if (photo && photo.imageUrl && photo.imageUrl.startsWith('http')) {
                 displayImage = photo.imageUrl;
             } else if (post.imageUrl && post.imageUrl.length > 0) {
-                // Use the first URL from post.imageUrl
                 displayImage = post.imageUrl[0];
             }
 

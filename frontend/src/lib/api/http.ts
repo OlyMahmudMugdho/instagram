@@ -16,12 +16,12 @@ export class ApiError extends Error {
 
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, headers = {}, credentials = 'include' } = options;
-
+  
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
   const config: RequestInit = {
     method,
-    credentials,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),

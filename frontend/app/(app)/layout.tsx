@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import type { MenuProps } from "antd";
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Typography, Spin, Grid } from "antd";
-import { HomeOutlined, UserOutlined, LogoutOutlined, PlusOutlined } from "@ant-design/icons";
+import { HomeOutlined, UserOutlined, LogoutOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useAuth } from "@/lib/auth-context";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
@@ -16,6 +16,7 @@ const { useBreakpoint } = Grid;
 
 const menuItems = [
   { key: "/feed", icon: <HomeOutlined />, label: "Feed" },
+  { key: "/search", icon: <SearchOutlined />, label: "Explore" },
   { key: "/posts/create", icon: <PlusOutlined />, label: "Create" },
   { key: "/profile", icon: <UserOutlined />, label: "Profile" },
 ];
@@ -125,11 +126,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <Menu
                   mode="inline"
                   selectedKeys={[pathname]}
-                  items={[
-                    { key: "/feed", icon: <HomeOutlined />, label: "Feed" },
-                    { key: "/posts/create", icon: <PlusOutlined />, label: "Create" },
-                    { key: "/profile", icon: <UserOutlined />, label: "Profile" },
-                  ]}
+                  items={menuItems}
                   onClick={({ key }) => handleMenuClick(key)}
                   style={{ borderRight: 0 }}
                 />

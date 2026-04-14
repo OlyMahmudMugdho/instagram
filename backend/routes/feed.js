@@ -6,7 +6,7 @@ const verifyAccess = require('../middlewares/verifyAccessToken').verifyAccess;
 
 
 router.route('/feed')
-    .get(newsFeedController);
+    .get(checkJWT, verifyAccess, newsFeedController);
 
 
 module.exports = router;

@@ -56,30 +56,26 @@ export const authService = {
       localStorage.removeItem('accessToken');
     }
     const res = await http.post<AuthResponse>(endpoints.auth.login, { body: data });
+    if (res.success && res.accessToken && typeof window !== 'undefined') {
+      localStorage.setItem('accessToken', res.accessToken);
+      return res;
+    }
     if (res.success) {
-      // After login, we need to get an access token because the login 
-      // response might only contain the refresh token cookie.
-      try {
-        const tokenRes = await authService.getAccessToken();
-        if (tokenRes.success && tokenRes.user) {
-          return {
-            ...res,
-            user: {
-              ...tokenRes.user,
-              email: '', // Backend login doesn't return email, /token might not either
-              name: '',
-            }
-          };
-        }
-      } catch (e) {
-        console.error('Failed to get access token after login:', e);
-      }
+      return authService.getAccessToken();
     }
     return res;
   },
 
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
-    return http.post<AuthResponse>(endpoints.auth.register, { body: data });
+    const res = await http.post<AuthResponse>(endpoints.auth.register, { body: data });
+    if (res.success && res.accessToken && typeof window !== 'undefined') {
+      localStorage.setItem('accessToken', res.accessToken);
+      return res;
+    }
+    if (res.success) {
+      return authService.getAccessToken();
+    }
+    return res;
   },
 
   logout: async (): Promise<AuthResponse> => {

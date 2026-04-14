@@ -8,7 +8,7 @@ export function LogoutTransition({ active }: { active: boolean }) {
       return;
     }
 
-    window.location.assign("/login");
+    window.location.href = "/login";
   }, [active]);
 
   return null;

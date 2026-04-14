@@ -32,12 +32,17 @@ const getAccessToken = async (req, res) => {
         { expiresIn: '1d' }
     );
 
+    const user = await Users.findOne({ userID: req.userID });
+
     return res.status(200).json({
         success: true,
         accessToken: accessToken,
         user: {
             _id: req.userID,
-            username: req.username
+            username: req.username,
+            email: user?.email || '',
+            name: user?.name || '',
+            avatar: user?.profilePicture || ''
         }
     });
 }

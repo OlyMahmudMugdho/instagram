@@ -15,8 +15,6 @@ const handleLogin = async (req, res) => {
      });
     }
 
-    console.log(username, " ", password)
-
     const foundUser = await Users.findOne({ username: username }).exec();
 
 
@@ -49,19 +47,32 @@ const handleLogin = async (req, res) => {
             expiresIn: '3d'
         }
     );
+    const accessToken = jwt.sign(
+        { "username": foundUser.username, "userID": foundUser.userID },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: '1d'
+        }
+    );
 
     foundUser.refreshToken = refreshToken;
-    console.log(process.env.REFRESH_TOKEN_SECRET, " checking process.env")
     await foundUser.save();
 
+    const isProduction = process.env.NODE_ENV === 'production';
 
     return res.status(200).cookie(
         'jwt',
         refreshToken,
-        { httpOnly: true, secure: true, sameSite: 'none', maxAge: 3 * 24 * 60 * 60 * 1000 }
+        {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            maxAge: 3 * 24 * 60 * 60 * 1000
+        }
     ).json(
         {
             success: true,
+            accessToken: accessToken,
             refreshToken: refreshToken,
             message: "logged in",
             user: {

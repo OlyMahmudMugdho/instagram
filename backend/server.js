@@ -78,6 +78,7 @@ cloudinary.uploader.upload("files/169419254022327ab7504-14d2-4235-9bae-78e76db36
  */
 
 
+app.use('/friends', require('./routes/friends'));
 app.use('/', require('./routes/posts'));
 app.use('/', require('./routes/register'));
 app.use('/', require('./routes/login'));
@@ -91,7 +92,8 @@ app.use('/', require('./routes/feed'));
 app.use('/', require('./routes/resetPassword'));
 app.use('/', require('./routes/usersMe'));
 app.use('/', require('./routes/users'));
-app.use('/', require('./routes/search'));
+app.use('/search', require('./routes/search'));
+app.use('/suggestions', require('./routes/suggestions'));
 app.use('/', require('./routes/helper'))
 
 mongoose.connection.once(

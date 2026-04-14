@@ -14,9 +14,9 @@ const search = async (req, res) => {
     const foundMatched = await Users.find({
         $or: [
             { name: { $regex: `${searchQuery}`, $options: 'i' } },
-            { username: { $regex: `${searchQuery}` } }
+            { username: { $regex: `${searchQuery}`, $options: 'i' } },
+            { email: { $regex: `${searchQuery}`, $options: 'i' } }
         ]
-
     });
 
     let foundNames = [];
