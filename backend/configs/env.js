@@ -1,3 +1,6 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+
 const requiredEnvVars = [
   'MONGO_URI',
   'JWT_SECRET',
@@ -6,6 +9,11 @@ const requiredEnvVars = [
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
   'CLOUDINARY_API_SECRET',
+  'EMAILID',
+  'PASSWORDFORMAIL',
+  'ACCESS_TOKEN_SECRET_FOR_PASSWORD_RESET',
+  'SMTP_HOST',
+  'SMTP_PORT',
 ];
 
 const missing = requiredEnvVars.filter((key) => !process.env[key]);

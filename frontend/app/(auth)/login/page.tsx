@@ -60,6 +60,10 @@ export default function LoginPage() {
             </Button>
           </Form.Item>
 
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <a href="/forgot-password" style={{ fontSize: "14px" }}>Forgot password?</a>
+          </div>
+
           <div style={{ textAlign: "center" }}>
             <Text type="secondary">
               Don&apos;t have an account?{" "}

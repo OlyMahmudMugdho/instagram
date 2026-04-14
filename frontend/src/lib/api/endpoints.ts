@@ -4,6 +4,9 @@ export const endpoints = {
     register: '/register',
     logout: '/logOut',
     token: '/token',
+    forgotPassword: '/reset/password/search',
+    verifyCode: '/reset/password/final',
+    resetPassword: '/reset/password/change',
   },
   posts: {
     list: '/posts',

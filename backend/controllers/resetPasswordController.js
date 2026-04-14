@@ -1,4 +1,5 @@
 const Users = require('../models/Users');
+const bcrypt = require('bcrypt');
 
 const reset = async (req,res) => {
     const email = req.body.email;
@@ -29,7 +30,7 @@ const reset = async (req,res) => {
     }
 
     try {
-        foundUser.password = newPassword;
+        foundUser.password = await bcrypt.hash(newPassword, 10);
         await foundUser.save();
         return res.status(200).json({
             success : true,
@@ -37,7 +38,7 @@ const reset = async (req,res) => {
         });
         
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({
             error : true,
             message : "error from server"

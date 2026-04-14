@@ -89,6 +89,18 @@ export const authService = {
     return http.get<AuthResponse>('/logout');
   },
 
+  forgotPassword: async (email: string): Promise<AuthResponse> => {
+    return http.post<AuthResponse>(endpoints.auth.forgotPassword, { body: { email } });
+  },
+
+  verifyCode: async (email: string, code: string): Promise<AuthResponse> => {
+    return http.post<AuthResponse>(endpoints.auth.verifyCode, { body: { email, code } });
+  },
+
+  resetPassword: async (email: string, newPassword: string, recheck: string): Promise<AuthResponse> => {
+    return http.post<AuthResponse>(endpoints.auth.resetPassword, { body: { email, newPassword, recheck } });
+  },
+
   getToken: async (): Promise<AuthResponse> => {
     try {
       const tokenRes = await authService.getAccessToken();

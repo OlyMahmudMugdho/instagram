@@ -31,18 +31,16 @@ const validate = async (req,res,next) => {
         }
     );
 
-    res.cookie(
+    return res.cookie(
         'code',
         accessToken,
         {
             httpOnly : true
         }
     ).status(200).json({
+        success : true,
         token : accessToken
     });
-
-    return next();
-
 }
 
 module.exports = {

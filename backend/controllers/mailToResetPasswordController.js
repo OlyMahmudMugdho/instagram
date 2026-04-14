@@ -25,30 +25,26 @@ const mailToResetPassword = async (req, res) => {
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetCode = Math.floor(Math.random()*999999)+110000;
+    const resetCode = Math.floor(Math.random() * 999999) + 110000;
 
     foundUser.resetCode = resetCode;
     await foundUser.save();
 
-    const link = `Here is the code to reset password <h2>${resetCode}</h2>`;
+    const emailContent = `Your verification code to reset your password is: <h2>${resetCode}</h2><br>If you did not request this, please ignore this email.`;
 
     try {
-        await sendMail(req,res,email,link);
+        await sendMail(email, emailContent);
         return res.status(200).json({
-            message : "mail sent"
+            success: true,
+            message: "mail sent"
         })
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({
             error: true,
             message: "error from server"
         })
     }
-
-    return res.status(200).json({
-        message : "mail sent"
-    });
-
 }
 
 

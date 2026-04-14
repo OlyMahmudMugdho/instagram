@@ -1,44 +1,28 @@
 const nodemailer = require('nodemailer');
 
-const send = async (req,res,address,link) => {
-    if(!address || !link) {
-        return 
-    }
-    
-    const transporter = await nodemailer.createTransport({
-        host: "smtp-relay.sendinblue.com",
-            port: 587,
-            auth: {
-                user: process.env.EMAILID,
-                pass: process.env.PASSWORDFORMAIL,
-            }
-    });
-
-    const mailOptions =  {
-        from : 'instagram@pixl.com',
-        to : address.toString(),
-        subject : 'Reset Password',
-        text : `Click this link to reset password ${link}`,
+const send = async (address, link) => {
+    if (!address || !link) {
+        throw new Error("Address and link are required");
     }
 
-    await transporter.sendMail(mailOptions, (err,info) => {
-        if(err) {
-            console.log(err);
-            return res.status(500).json(
-                {
-                    error : true,
-                    message : "an error occured from server"
-                }
-            );
+    const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: parseInt(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_PORT === "465",
+        auth: {
+            user: process.env.EMAILID,
+            pass: process.env.PASSWORDFORMAIL,
         }
-        
-        console.log(info)
-
-        return res.status(200).json({
-            message : "reset password mail sent",
-            info : info
-        });
     });
+
+    const mailOptions = {
+        from: 'instagram@pixl.com',
+        to: address.toString(),
+        subject: 'Reset Password',
+        html: link, // The 'link' variable here contains the full HTML body
+    };
+
+    return transporter.sendMail(mailOptions);
 }
 
 module.exports = {

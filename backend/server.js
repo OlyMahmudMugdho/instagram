@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const express = require('express');
 const app = express();
@@ -9,7 +10,6 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const credentials = require('./configs/credentials').credentials;
 const mongoose = require('mongoose');
-const path = require('path');
 var cloudinary = require('cloudinary').v2
 
 require('./configs/env');
