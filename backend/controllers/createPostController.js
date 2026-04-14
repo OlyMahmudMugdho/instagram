@@ -3,91 +3,86 @@ const Posts = require('../models/Post');
 const Photo = require('../models/Photo');
 const uuid = require('uuid');
 const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
 
 const createPost = async (req, res) => {
-    const { content, image } = req.body;
-    console.log(await req.userID + "from here");
-    const userID = await req.userID;
-    const PROTOCOL = 'http';
-    const SERVER = 'localhost';
-    const PORT = 5000;
+    const { content } = req.body;
+    const userID = req.userID;
 
-    const ADRESS = PROTOCOL + '://' + SERVER + ':' + PORT;
-
-    let imageUrl = [];
+    if (!req.files || req.files.length === 0) {
+        return res.status(400).json({
+            error: true,
+            message: "Please select at least one image"
+        });
+    }
 
     cloudinary.config({
-        cloud_name: 'dnmubeloc',
-        api_key: '156698557795686',
-        api_secret: '1mljPOjNWxfNYtjUMTcWIFQlu0Q'
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
     });
 
     const postId = uuid.v4();
-
-    // cloudinary.uploader.upload("../files/16945016681768d6e912c-46f6-42c8-8eab-2523be047256.jpg")
-
-    req.files.map(img => {
-        cloudinary.uploader
-            .upload(img.path)
-            .then(async (result) => {
-                try {
-                    const photo = await Photo.create({
-                        imageUrl: result.url,
-                        postId: postId,
-                        userID: userID
-                    })
-                    await photo.save();
-                    console.log(result.url + " file cloudinary");
-                }
-                catch (error) {
-                    console.log(error);
-                }
-            })
-    })
-
-    req.files.map(file => imageUrl.push(ADRESS + '/files/' + file.filename));
-
-
-
-
-    console.log(imageUrl);
-    console.log(content);
-
-    const foundUser = await Users.findOne({ userID: userID }).exec();
-
-    if (await foundUser) {
-        console.log("found")
-    }
-
-    const name = await foundUser.name;
+    const imageUrls = [];
 
     try {
+        const foundUser = await Users.findOne({ userID: userID }).exec();
+        if (!foundUser) {
+            return res.status(404).json({ error: true, message: "User not found" });
+        }
+
+        // Upload all files to Cloudinary
+        for (const file of req.files) {
+            const result = await cloudinary.uploader.upload(file.path, {
+                folder: 'posts',
+                resource_type: 'auto'
+            });
+
+            // Cleanup local file
+            fs.unlink(file.path, (err) => {
+                if (err) console.error("Error deleting local file:", err);
+            });
+
+            imageUrls.push(result.secure_url);
+
+            // Create Photo entry
+            await Photo.create({
+                imageUrl: result.secure_url,
+                postId: postId,
+                userID: userID
+            });
+        }
 
         const newPost = await Posts.create({
             content: content,
-            imageUrl: imageUrl,
-            author: name,
+            imageUrl: imageUrls,
+            author: foundUser.name,
             userID: userID,
             postId: postId,
-        })
+        });
 
         await newPost.save();
-    }
-    catch (error) {
-        console.log(error);
-        console.log('error due to database');
+
+        return res.status(200).json({
+            success: true,
+            message: "Post created successfully",
+            post: newPost
+        });
+
+    } catch (error) {
+        console.error("Create post error:", error);
+        // Attempt to cleanup any remaining local files
+        req.files.forEach(file => {
+            if (fs.existsSync(file.path)) {
+                fs.unlinkSync(file.path);
+            }
+        });
+
         return res.status(500).json({
             error: true,
-            message: 'internal server error'
-        })
+            message: 'Internal server error'
+        });
     }
-
-    return res.status(200).json({
-        sucess: true,
-        message: "uploaded"
-    })
-
-
 }
 
 module.exports = {

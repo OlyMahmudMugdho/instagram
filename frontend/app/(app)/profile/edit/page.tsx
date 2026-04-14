@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Form, Input, Button, Card, Typography, message, Avatar, Spin } from "antd";
+import { Form, Input, Button, Card, Typography, message, Avatar, Spin, Upload } from "antd";
 import { UserOutlined, UploadOutlined } from "@ant-design/icons";
 import { http } from "@/lib/api/http";
 import { endpoints } from "@/lib/api/endpoints";
@@ -19,32 +19,34 @@ const { Title } = Typography;
 
 export default function EditProfilePage() {
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
   const router = useRouter();
   const [form] = Form.useForm();
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await http.get<{ success: boolean; user: UserData }>(endpoints.users.me);
-        if (res.success && res.user) {
-          setUserData(res.user);
-          form.setFieldsValue({
-            username: res.user.username,
-            name: res.user.name,
-            email: res.user.email
-          });
-        } else {
-          message.error("Failed to load user data");
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        message.error("An error occurred while loading profile data");
-      } finally {
-        setUserLoading(false);
+  const fetchUser = async () => {
+    try {
+      const res = await http.get<{ success: boolean; user: UserData }>(endpoints.users.me);
+      if (res.success && res.user) {
+        setUserData(res.user);
+        form.setFieldsValue({
+          username: res.user.username,
+          name: res.user.name,
+          email: res.user.email
+        });
+      } else {
+        message.error("Failed to load user data");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      message.error("An error occurred while loading profile data");
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUser();
   }, [form]);
 
@@ -55,6 +57,41 @@ export default function EditProfilePage() {
       </div>
     );
   }
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      // Use standard fetch for multipart/form-data as our http helper might not be configured for it
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+      
+      const response = await fetch(`${API_BASE_URL}${endpoints.users.profilePicture}`, {
+        method: 'PUT',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      });
+
+      const res = await response.json();
+
+      if (res.success) {
+        message.success("Profile picture updated");
+        fetchUser(); // Refresh user data
+      } else {
+        message.error(res.message || "Failed to upload picture");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      message.error("Failed to upload profile picture");
+    } finally {
+      setUploading(false);
+    }
+    return false; // Prevent default upload behavior
+  };
 
   const onFinish = async (values: { name: string; email: string }) => {
     setLoading(true);
@@ -90,7 +127,13 @@ export default function EditProfilePage() {
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <Avatar size={80} src={userData?.avatar} icon={!userData?.avatar && <UserOutlined />} />
           <div style={{ marginTop: 8 }}>
-            <Button icon={<UploadOutlined />}>Change Photo</Button>
+            <Upload 
+              beforeUpload={handleUpload} 
+              showUploadList={false}
+              accept="image/*"
+            >
+              <Button icon={<UploadOutlined />} loading={uploading}>Change Photo</Button>
+            </Upload>
           </div>
         </div>
 
