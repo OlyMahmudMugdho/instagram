@@ -35,9 +35,11 @@ const upload = multer({ storage: storage });
 
 require('dotenv').config();
 
+router.route('/posts/create')
+    .post(checkJWT.check, verifyAccessToken.verifyAccess, upload.array('image', 10), createPostController.createPost)
+
 router.route('/posts')
     .get(checkRoute.checkUrl, checkJWT.check, verifyAccessToken.verifyAccess, allPostsController.showAllPosts)
-    .post(checkJWT.check, verifyAccessToken.verifyAccess, upload.array('image', 50), createPostController.createPost)
 
 /* .post(verifyAccessToken.verifyAccess,fileUpload({ createParentPath: true }), createPostController.createPost) */
 

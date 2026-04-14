@@ -103,6 +103,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   selectedKeys={[pathname]}
                   items={[
                     { key: "/feed", icon: <HomeOutlined />, label: "Feed" },
+                    { key: "/posts/create", icon: <PlusOutlined />, label: "Create" },
                     { key: "/profile", icon: <UserOutlined />, label: "Profile" },
                   ]}
                   onClick={({ key }) => handleMenuClick(key)}
