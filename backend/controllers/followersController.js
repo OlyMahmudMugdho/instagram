@@ -6,48 +6,24 @@ const follow = async (req, res) => {
     const followerID = req.userID;
     const followingID = req.params.followingID;
 
-    if (!followingID) {
-        return res.status(404).json({
+    if (!followingID || followerID === followingID) {
+        return res.status(400).json({
             error: true,
-            message: "following ID is required"
-        });
-    }
-
-    if(followingID === process.env.EXCEPTIONAL_ID_ONE){
-        return res.status(403).json({
-            error: true,
-            message: "you are not allowed to follow this person"
-        });
-    }
-
-    const existedUser = await Users.findOne({ userID: followingID });
-
-    if (!existedUser) {
-        return res.status(404).json(
-            {
-                error: true,
-                message: "User not found"
-            }
-        );
-    }
-
-    const existedFollower = await Followers.findOne({ $and: [{ follower: followerID }, { following: followingID }] });
-
-    if (existedFollower) {
-        return res.status(202).json({
-            message: "already followed"
+            message: "Invalid following ID"
         });
     }
 
     try {
-        const newFollower = await Followers.create({
-            follower: followerID,
-            following: followingID
-        })
+        const existedUser = await Users.findOne({ userID: followingID });
+        if (!existedUser) {
+            return res.status(404).json({
+                error: true,
+                message: "User to follow not found"
+            });
+        }
 
-        await newFollower.save();
-
-        // Automatically send a friend request if none exists
+        // We check if we should create a friend request FIRST or independently of the follow status
+        // This handles cases where someone was followed before the request logic was added
         const existingFriendship = await Friend.findOne({ 
             $or: [
                 { sender: followerID, receiver: followingID },
@@ -55,11 +31,33 @@ const follow = async (req, res) => {
             ]
         });
 
+        let requestSent = false;
         if (!existingFriendship) {
-            await Friend.create({ sender: followerID, receiver: followingID });
+            const newRequest = new Friend({ 
+                sender: followerID, 
+                receiver: followingID, 
+                status: 'pending' 
+            });
+            await newRequest.save();
+            requestSent = true;
         }
 
-        const loggedUser = await Users.findOne({ userID: req.userID });
+        const existedFollower = await Followers.findOne({ follower: followerID, following: followingID });
+        if (existedFollower) {
+            return res.status(200).json({
+                success: true,
+                message: requestSent ? "Friend request sent (already following)" : "Already followed and request exists"
+            });
+        }
+
+        // Create follow relationship
+        await Followers.create({
+            follower: followerID,
+            following: followingID
+        });
+
+        // Update counts
+        const loggedUser = await Users.findOne({ userID: followerID });
         if (loggedUser) {
             loggedUser.following = (loggedUser.following || 0) + 1;
             await loggedUser.save();
@@ -70,20 +68,17 @@ const follow = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "followed"
-        })
-        
+            message: "Followed and friend request sent"
+        });
 
     } catch (error) {
-        console.log(error);
+        console.error("Follow error:", error);
         return res.status(500).json({
             error: true,
             message: "Internal server error"
         });
     }
-
 }
-
 
 module.exports = {
     follow

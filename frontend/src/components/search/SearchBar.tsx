@@ -35,7 +35,7 @@ export const SearchBar = () => {
           dataSource={results.usernames}
           renderItem={(item: string, i: number) => (
             <List.Item 
-              onClick={() => router.push(`/profile/${results.userIDs[i]}`)}
+              onClick={() => router.push(`/profile?userID=${results.userIDs[i]}`)}
               style={{ padding: '12px', cursor: 'pointer', transition: 'background 0.2s' }}
               className="search-item"
             >

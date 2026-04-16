@@ -15,12 +15,14 @@ var cloudinary = require('cloudinary').v2
 require('./configs/env');
 
 app.use('/files', express.static(path.resolve(__dirname, 'files')));
+const frontendDistPath = path.resolve(__dirname, 'dist');
 
 const PORT = process.env.PORT || 5000;
 
 dbConnection.connectDB();
 
-app.use(express.static(path.resolve(__dirname, '..', 'frontend', 'dist')));
+// Serve static frontend from backend/dist
+app.use(express.static(frontendDistPath));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 const corsOptions = ['*'];
@@ -42,59 +44,46 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-
-
-
-app.get('/', (req, res) => {
-    res.json({
-        success: true
-    })
-
-    /* res.
-        sendFile(path.resolve(__dirname, '..', 'frontend', 'dist', 'index.html')); */
-});
-
-
-app.get('/api', (req, res) => {
-    res.json({
-        success: true
-    })
-
-    /* res.
-        sendFile(path.resolve(__dirname, '..', 'frontend', 'build', 'index.html')); */
-});
-
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-/* 
+app.use('/api/friends', require('./routes/friends'));
+app.use('/api', require('./routes/posts'));
+app.use('/api', require('./routes/register'));
+app.use('/api', require('./routes/login'));
+app.use('/api', require('./routes/logOut'));
+app.use('/api', require('./routes/token'));
+app.use('/api', require('./routes/likes'));
+app.use('/api', require('./routes/follow'));
+app.use('/api', require('./routes/comment'));
+app.use('/api', require('./routes/feed'));
+app.use('/api', require('./routes/resetPassword'));
+app.use('/api', require('./routes/usersMe'));
+app.use('/api', require('./routes/users'));
+app.use('/api/search', require('./routes/search'));
+app.use('/api/suggestions', require('./routes/suggestions'));
+app.use('/api', require('./routes/helper'))
 
-cloudinary.uploader.upload("files/169419254022327ab7504-14d2-4235-9bae-78e76db3608c.jpeg")
-    .then(result => console.log(result));
+// SPA fallback for non-API, non-file routes
+app.get('*', (req, res, next) => {
+    if (req.url.startsWith('/api') || req.url.startsWith('/files')) {
+        return next();
+    }
 
- */
+    if (path.extname(req.url)) {
+        return next();
+    }
 
+    res.sendFile(path.resolve(frontendDistPath, 'index.html'));
+});
 
-app.use('/friends', require('./routes/friends'));
-app.use('/', require('./routes/posts'));
-app.use('/', require('./routes/register'));
-app.use('/', require('./routes/login'));
-app.use('/', require('./routes/logOut'));
-app.use('/', require('./routes/token'));
-app.use('/', require('./routes/posts'));
-app.use('/', require('./routes/likes'));
-app.use('/', require('./routes/follow'));
-app.use('/', require('./routes/comment'));
-app.use('/', require('./routes/feed'));
-app.use('/', require('./routes/resetPassword'));
-app.use('/', require('./routes/usersMe'));
-app.use('/', require('./routes/users'));
-app.use('/search', require('./routes/search'));
-app.use('/suggestions', require('./routes/suggestions'));
-app.use('/', require('./routes/helper'))
+// Explicit 404 handler
+app.use((req, res) => {
+    res.status(404).send('Not Found');
+});
 
 mongoose.connection.once(
     'open', () => {

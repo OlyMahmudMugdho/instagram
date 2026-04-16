@@ -5,9 +5,12 @@ import { fileURLToPath } from "url";
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: projectRoot,
+  output: 'export',   // Enables static HTML export
+  distDir: 'dist',
+  images: {
+    unoptimized: true,
   },
+  trailingSlash: true,
 };
 
 export default nextConfig;

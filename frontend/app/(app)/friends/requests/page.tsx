@@ -10,14 +10,14 @@ export default function FriendRequestsPage() {
   const [requests, setRequests] = useState<any[]>([]);
 
   useEffect(() => {
-    http.get<{ success: boolean; requests: any[] }>("/friends/requests")
+    http.get<{ success: boolean; requests: any[] }>("/api/friends/requests")
       .then(res => {
         if (res.success) setRequests(res.requests);
       });
   }, []);
 
   const acceptRequest = async (senderId: string) => {
-    const res = await http.post<{ success: boolean }>("/friends/accept", { body: { sender: senderId } });
+    const res = await http.post<{ success: boolean }>("/api/friends/accept", { body: { sender: senderId } });
     if (res.success) {
       message.success("Request accepted");
       setRequests(requests.filter(req => req.sender.userID !== senderId));

@@ -1,26 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, Avatar, Button, Space, Typography, Spin, List, Tabs } from "antd";
 import { UserOutlined, EditOutlined } from "@ant-design/icons";
 import { useAuth } from "@/lib/auth-context";
 import { postsService, Post } from "@/services/posts";
+import ClientProfile from "./[id]/ClientProfile";
 
 const { Title, Text, Paragraph } = Typography;
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const viewedUserId = searchParams.get("userID");
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
 
   useEffect(() => {
+    if (viewedUserId) {
+      return;
+    }
     refreshUser();
     loadPosts();
-  }, []);
+  }, [viewedUserId]);
+
+  if (viewedUserId) {
+    return <ClientProfile userId={viewedUserId} />;
+  }
 
   const loadPosts = async () => {
     setPostsLoading(true);

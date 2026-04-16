@@ -34,7 +34,7 @@ export interface AuthResponse {
 export const authService = {
   getAccessToken: async (): Promise<AuthResponse> => {
     try {
-      const res = await http.get<AuthResponse>('/token');
+      const res = await http.get<AuthResponse>(endpoints.auth.token);
       if (res.success && res.accessToken) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('accessToken', res.accessToken);
@@ -84,7 +84,7 @@ export const authService = {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
     }
-    return http.get<AuthResponse>('/logout');
+    return http.get<AuthResponse>(endpoints.auth.logout);
   },
 
   forgotPassword: async (email: string): Promise<AuthResponse> => {
@@ -107,7 +107,7 @@ export const authService = {
       }
       
       // Then fetch the full user profile
-      const res = await http.get<AuthResponse>('/users/me');
+      const res = await http.get<AuthResponse>(endpoints.users.me);
       if (res.success && res.user) {
         return res;
       }
