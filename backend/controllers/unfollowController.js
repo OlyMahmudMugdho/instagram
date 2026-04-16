@@ -15,7 +15,7 @@ const unfollow = async (req, res) => {
         });
     }
 
-    const existedFollower = await Followers.findOne({ follower: followerID }, { following: followingID });
+    const existedFollower = await Followers.findOne({ follower: followerID, following: followingID });
 
     if (!existedFollower) {
         return res.status(404).json({
@@ -24,10 +24,25 @@ const unfollow = async (req, res) => {
     }
 
     try {
-        await Followers.deleteOne({ $and: [{ follower: followerID }, { following: followingID }] });
+        await Followers.deleteOne({ _id: existedFollower._id });
+
+        // Update following count for the logged in user
+        const loggedUser = await Users.findOne({ userID: followerID });
+        if (loggedUser) {
+            loggedUser.following = Math.max(0, (loggedUser.following || 0) - 1);
+            await loggedUser.save();
+        }
+
+        // Update followers count for the user being unfollowed
+        const targetUser = await Users.findOne({ userID: followingID });
+        if (targetUser) {
+            targetUser.followers = Math.max(0, (targetUser.followers || 0) - 1);
+            await targetUser.save();
+        }
+
         return res.status(200).json({
             success: true,
-            message: "User unfollowed succcessfully"
+            message: "User unfollowed successfully"
         });
     }
     catch (error) {

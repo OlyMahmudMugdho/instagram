@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { authService, AuthResponse, LoginRequest, RegisterRequest } from "@/services/auth";
+import { authService, LoginRequest, RegisterRequest } from "@/services/auth";
 
 interface User {
   _id: string;
@@ -9,6 +9,8 @@ interface User {
   username: string;
   name: string;
   avatar?: string;
+  followers?: number;
+  following?: number;
 }
 
 interface AuthContextType {
@@ -35,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.success && res.user) {
         setUser(res.user as User);
       }
-    } catch (e) {
+    } catch {
       // Not logged in
     } finally {
       setLoading(false);

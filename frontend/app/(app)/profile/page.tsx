@@ -65,11 +65,11 @@ export default function ProfilePage() {
             <Text type="secondary"> posts</Text>
           </div>
           <div>
-            <Text strong>0</Text>
+            <Text strong>{user.followers || 0}</Text>
             <Text type="secondary"> followers</Text>
           </div>
           <div>
-            <Text strong>0</Text>
+            <Text strong>{user.following || 0}</Text>
             <Text type="secondary"> following</Text>
           </div>
         </Space>

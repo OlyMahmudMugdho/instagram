@@ -47,11 +47,12 @@ const follow = async (req, res) => {
         await newFollower.save();
 
         const loggedUser = await Users.findOne({ userID: req.userID });
-        loggedUser.following = await Number(await loggedUser.following) + 1;
-        await loggedUser.save();
+        if (loggedUser) {
+            loggedUser.following = (loggedUser.following || 0) + 1;
+            await loggedUser.save();
+        }
 
-        existedUser.followers = await Number(await await existedUser.followers + 1);
-
+        existedUser.followers = (existedUser.followers || 0) + 1;
         await existedUser.save();
 
         return res.status(200).json({

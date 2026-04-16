@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const Users = require('../models/Users');
+const Followers = require('../models/Followers');
 
 router.route('/users/me')
     .get(async (req, res) => {
@@ -17,6 +18,9 @@ router.route('/users/me')
             if (!user) {
                 return res.status(404).json({ success: false, message: 'User not found' });
             }
+
+            const followersCount = await Followers.countDocuments({ following: user.userID });
+            const followingCount = await Followers.countDocuments({ follower: user.userID });
             
             res.json({
                 success: true,
@@ -26,8 +30,8 @@ router.route('/users/me')
                     name: user.name,
                     email: user.email,
                     avatar: user.profilePicture || '',
-                    followers: user.followers || 0,
-                    following: user.following || 0
+                    followers: followersCount,
+                    following: followingCount
                 }
             });
         } catch (error) {

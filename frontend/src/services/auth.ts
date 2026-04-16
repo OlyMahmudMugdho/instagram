@@ -22,6 +22,8 @@ export interface AuthResponse {
     username: string;
     name: string;
     avatar?: string;
+    followers?: number;
+    following?: number;
   };
   token?: string;
   accessToken?: string;

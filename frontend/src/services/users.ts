@@ -6,6 +6,8 @@ export interface User {
   name: string;
   userID: string;
   profilePicture?: string;
+  followers?: number;
+  following?: number;
 }
 
 export const usersService = {
