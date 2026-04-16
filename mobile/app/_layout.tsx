@@ -16,7 +16,7 @@ export default function RootLayout() {
   return (
     <PaperProvider theme={theme}>
       <AuthProvider>
-        <Stack />
+        <Stack screenOptions={{ headerShown: false }} />
       </AuthProvider>
     </PaperProvider>
   );
