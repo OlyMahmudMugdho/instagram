@@ -30,7 +30,7 @@ export default function CreatePostPage() {
       });
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://instagram-38a4.onrender.com';
       
       const response = await fetch(`${API_BASE_URL}${endpoints.posts.create}`, {
         method: 'POST',
