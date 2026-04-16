@@ -1,12 +1,13 @@
 const Followers = require('../models/Followers');
 const Users = require('../models/Users');
+const Friend = require('../models/Friend');
 
 
 const unfollow = async (req, res) => {
     const followerID = req.userID;
     const followingID = req.params.followingID;
 
-    const existedUser = await Users.findOne({ userID: followerID });
+    const existedUser = await Users.findOne({ userID: followingID });
 
     if (!existedUser) {
         return res.status(404).json({
@@ -25,6 +26,14 @@ const unfollow = async (req, res) => {
 
     try {
         await Followers.deleteOne({ _id: existedFollower._id });
+
+        // Remove friendship connection (either way)
+        await Friend.deleteMany({
+            $or: [
+                { sender: followerID, receiver: followingID },
+                { sender: followingID, receiver: followerID }
+            ]
+        });
 
         // Update following count for the logged in user
         const loggedUser = await Users.findOne({ userID: followerID });

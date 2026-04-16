@@ -1,5 +1,6 @@
 const Followers = require('../models/Followers');
 const Users = require('../models/Users');
+const Friend = require('../models/Friend');
 
 const follow = async (req, res) => {
     const followerID = req.userID;
@@ -45,6 +46,18 @@ const follow = async (req, res) => {
         })
 
         await newFollower.save();
+
+        // Automatically send a friend request if none exists
+        const existingFriendship = await Friend.findOne({ 
+            $or: [
+                { sender: followerID, receiver: followingID },
+                { sender: followingID, receiver: followerID }
+            ]
+        });
+
+        if (!existingFriendship) {
+            await Friend.create({ sender: followerID, receiver: followingID });
+        }
 
         const loggedUser = await Users.findOne({ userID: req.userID });
         if (loggedUser) {

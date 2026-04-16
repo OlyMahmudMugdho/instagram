@@ -1,5 +1,6 @@
 const Friend = require('../models/Friend');
 const Users = require('../models/Users');
+const Followers = require('../models/Followers');
 
 const sendRequest = async (req, res) => {
     const sender = req.userID;
@@ -36,7 +37,27 @@ const acceptRequest = async (req, res) => {
 
     request.status = 'accepted';
     await request.save();
-    res.status(200).json({ success: true, message: "Request accepted" });
+
+    // The one who accepts follows back the sender
+    const alreadyFollowing = await Followers.findOne({ follower: receiver, following: sender });
+    if (!alreadyFollowing) {
+        await Followers.create({ follower: receiver, following: sender });
+
+        // Update counts
+        const receiverUser = await Users.findOne({ userID: receiver });
+        if (receiverUser) {
+            receiverUser.following = (receiverUser.following || 0) + 1;
+            await receiverUser.save();
+        }
+
+        const senderUser = await Users.findOne({ userID: sender });
+        if (senderUser) {
+            senderUser.followers = (senderUser.followers || 0) + 1;
+            await senderUser.save();
+        }
+    }
+
+    res.status(200).json({ success: true, message: "Request accepted and followed back" });
 };
 
 const getFriends = async (req, res) => {

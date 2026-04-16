@@ -23,8 +23,16 @@ const getSingleUser = async (req, res) => {
     const followersCount = await Followers.countDocuments({ following: userID });
     const followingCount = await Followers.countDocuments({ follower: userID });
 
+    // Check if the current logged in user is following this user
+    let isFollowing = false;
+    if (req.userID) {
+        const relationship = await Followers.findOne({ follower: req.userID, following: userID });
+        isFollowing = !!relationship;
+    }
+
     foundUser.followers = followersCount;
     foundUser.following = followingCount;
+    foundUser.isFollowing = isFollowing;
 
     return res.status(200).json({
         success : true,

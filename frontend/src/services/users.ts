@@ -8,11 +8,16 @@ export interface User {
   profilePicture?: string;
   followers?: number;
   following?: number;
+  isFollowing?: boolean;
 }
 
 export const usersService = {
   follow: async (userID: string): Promise<{ success: boolean; message?: string }> => {
-    return http.post(`/friends/request`, { body: { receiver: userID } });
+    return http.get(`/follow/${userID}`);
+  },
+  
+  unfollow: async (userID: string): Promise<{ success: boolean; message?: string }> => {
+    return http.get(`/unfollow/${userID}`);
   },
   
   searchUsers: async (query: string): Promise<{ success: boolean; result?: { names: string[], usernames: string[], userIDs: string[] } }> => {
