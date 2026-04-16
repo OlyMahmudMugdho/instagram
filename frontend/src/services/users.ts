@@ -9,6 +9,7 @@ export interface User {
   followers?: number;
   following?: number;
   isFollowing?: boolean;
+  isFriend?: boolean;
 }
 
 export const usersService = {

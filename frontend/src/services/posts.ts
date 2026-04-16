@@ -38,6 +38,10 @@ export const postsService = {
     return http.get<PostsResponse>(`${endpoints.feed}?page=${page}&limit=${limit}`);
   },
 
+  getUserPosts: async (userID?: string): Promise<PostsResponse> => {
+    return http.get<PostsResponse>(`${endpoints.posts.list}/myposts${userID ? `?userID=${userID}` : ''}`);
+  },
+
   getPost: async (id: string): Promise<PostResponse> => {
     return http.get<PostResponse>(endpoints.posts.get(id));
   },

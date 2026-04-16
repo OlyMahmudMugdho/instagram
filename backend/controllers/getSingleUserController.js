@@ -1,5 +1,6 @@
 const User = require('../models/Users');
 const Followers = require('../models/Followers');
+const Friend = require('../models/Friend');
 
 const getSingleUser = async (req, res) => {
     const userID = req.params.userID;
@@ -25,14 +26,25 @@ const getSingleUser = async (req, res) => {
 
     // Check if the current logged in user is following this user
     let isFollowing = false;
+    let isFriend = false;
     if (req.userID) {
         const relationship = await Followers.findOne({ follower: req.userID, following: userID });
         isFollowing = !!relationship;
+
+        const friendship = await Friend.findOne({
+            $or: [
+                { sender: req.userID, receiver: userID },
+                { sender: userID, receiver: req.userID }
+            ],
+            status: 'accepted'
+        });
+        isFriend = !!friendship;
     }
 
     foundUser.followers = followersCount;
     foundUser.following = followingCount;
     foundUser.isFollowing = isFollowing;
+    foundUser.isFriend = isFriend;
 
     return res.status(200).json({
         success : true,

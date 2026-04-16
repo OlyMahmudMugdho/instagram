@@ -10,27 +10,30 @@ import { postsService, Post } from "@/services/posts";
 const { Title, Text, Paragraph } = Typography;
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
 
   useEffect(() => {
+    refreshUser();
     loadPosts();
   }, []);
 
   const loadPosts = async () => {
-    setLoading(true);
+    setPostsLoading(true);
     try {
-      const res = await postsService.getFeed(1, 20);
+      const res = await postsService.getUserPosts();
       if (res.success && res.posts) {
-        setPosts(res.posts.filter(p => p.userId === user?._id));
+        setPosts(res.posts);
       }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
+      setPostsLoading(false);
     }
   };
 
@@ -59,7 +62,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <Space style={{ marginTop: 24 }}>
+        <Space style={{ marginTop: 24 }} size="large">
           <div>
             <Text strong>{posts.length}</Text>
             <Text type="secondary"> posts</Text>
@@ -83,21 +86,30 @@ export default function ProfilePage() {
             {
               key: "posts",
               label: "Posts",
-              children: (
+              children: postsLoading ? (
+                <div style={{ textAlign: "center", padding: 40 }}><Spin /></div>
+              ) : (
                 <List
                   grid={{ gutter: 8, column: 3 }}
                   dataSource={posts}
                   renderItem={(post) => (
-                    post.image && (
-                      <List.Item>
+                    <List.Item style={{ margin: 0 }}>
+                      {post.image ? (
                         <img
                           src={post.image}
                           alt={post.title}
                           style={{ width: "100%", aspectRatio: 1, objectFit: "cover", cursor: "pointer" }}
                           onClick={() => router.push(`/post/${post._id}`)}
                         />
-                      </List.Item>
-                    )
+                      ) : (
+                        <div 
+                          style={{ width: "100%", aspectRatio: 1, background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                          onClick={() => router.push(`/post/${post._id}`)}
+                        >
+                          <Text type="secondary">No Image</Text>
+                        </div>
+                      )}
+                    </List.Item>
                   )}
                 />
               ),

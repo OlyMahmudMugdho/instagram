@@ -1,30 +1,53 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { http } from "@/lib/api/http";
-import { Spin, Typography, Avatar, Card, Space, Button, message } from "antd";
-import { UserOutlined, UserAddOutlined, UserDeleteOutlined } from "@ant-design/icons";
+import { Spin, Typography, Avatar, Card, Space, Button, message, Tabs, List, Empty } from "antd";
+import { UserOutlined, UserAddOutlined, UserDeleteOutlined, LockOutlined } from "@ant-design/icons";
 import { User, usersService } from "@/services/users";
 import { useAuth } from "@/lib/auth-context";
+import { postsService, Post } from "@/services/posts";
 
 const { Title, Text, Paragraph } = Typography;
 
 export default function UserProfilePage() {
   const { id } = useParams();
+  const router = useRouter();
   const { user: currentUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchUser = async () => {
     try {
       const res = await http.get<{ success: boolean; message: { foundUser: User } }>(`/users/${id}`);
-      if (res.success && res.message?.foundUser) setUser(res.message.foundUser);
+      if (res.success && res.message?.foundUser) {
+        setUser(res.message.foundUser);
+        if (res.message.foundUser.isFriend) {
+          fetchPosts();
+        }
+      }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPosts = async () => {
+    setPostsLoading(true);
+    try {
+      const res = await postsService.getUserPosts(id as string);
+      if (res.success && res.posts) {
+        setPosts(res.posts);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setPostsLoading(false);
     }
   };
 
@@ -116,6 +139,57 @@ export default function UserProfilePage() {
             <Text type="secondary"> following</Text>
           </div>
         </Space>
+      </Card>
+
+      <Card style={{ marginTop: 16 }}>
+        {user.isFriend || isOwnProfile ? (
+          <Tabs
+            defaultActiveKey="posts"
+            items={[
+              {
+                key: "posts",
+                label: "Posts",
+                children: postsLoading ? (
+                  <div style={{ textAlign: "center", padding: 40 }}><Spin /></div>
+                ) : (
+                  <List
+                    grid={{ gutter: 8, column: 3 }}
+                    dataSource={posts}
+                    renderItem={(post) => (
+                      <List.Item style={{ margin: 0 }}>
+                        {post.image ? (
+                          <img
+                            src={post.image}
+                            alt={post.title}
+                            style={{ width: "100%", aspectRatio: 1, objectFit: "cover", cursor: "pointer" }}
+                            onClick={() => router.push(`/post/${post._id}`)}
+                          />
+                        ) : (
+                          <div 
+                            style={{ width: "100%", aspectRatio: 1, background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                            onClick={() => router.push(`/post/${post._id}`)}
+                          >
+                            <Text type="secondary">No Image</Text>
+                          </div>
+                        )}
+                      </List.Item>
+                    )}
+                  />
+                ),
+              },
+            ]}
+          />
+        ) : (
+          <Empty
+            image={<LockOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />}
+            description={
+              <span>
+                Account is Private. <br />
+                <Text type="secondary">Become friends to see their posts.</Text>
+              </span>
+            }
+          />
+        )}
       </Card>
     </div>
   );
