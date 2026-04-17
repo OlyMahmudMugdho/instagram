@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { TextInput, Button, Title, Paragraph, Avatar, Snackbar, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../src/lib/auth-context';
+import { useAuth } from '../../src/lib/auth-context';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'http://10.0.2.2:5000';
 

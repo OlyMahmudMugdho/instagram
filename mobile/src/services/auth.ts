@@ -60,8 +60,14 @@ export const authService = {
 
   getAccessToken: async (): Promise<AuthResponse> => {
     try {
+      // Try to include refresh token stored in SecureStore as Authorization header
+      const refreshToken = await SecureStore.getItemAsync('refreshToken');
+      const headers: Record<string, string> = {};
+      if (refreshToken) headers['Authorization'] = `Bearer ${refreshToken}`;
+
       const res = await fetch(`${API_BASE_URL}/api/token`, {
         method: 'GET',
+        headers,
         credentials: 'include',
       });
       const body = await res.json().catch(() => ({}));

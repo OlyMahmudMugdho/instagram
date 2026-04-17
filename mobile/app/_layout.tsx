@@ -1,12 +1,13 @@
-import { Stack } from "expo-router";
-import { Provider as PaperProvider, MD3LightTheme } from 'react-native-paper';
-import { AuthProvider } from '../src/lib/auth-context';
+import { Stack, useSegments, useRouter } from 'expo-router';
+import { Provider as PaperProvider, MD3LightTheme, ActivityIndicator } from 'react-native-paper';
+import { AuthProvider, useAuth } from '../src/lib/auth-context';
+import { View, StyleSheet } from 'react-native';
+import { useEffect } from 'react';
 
 const theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    // change typography color
     onSurface: '#1f2937',
     primary: '#405de6',
   },
@@ -16,8 +17,46 @@ export default function RootLayout() {
   return (
     <PaperProvider theme={theme}>
       <AuthProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+        <AppContent />
       </AuthProvider>
     </PaperProvider>
   );
 }
+
+function AppContent() {
+  const { user, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return;
+
+    const inAuthGroup = segments[0] === 'auth_group';
+
+    // If not authenticated and not in auth group, force to login
+    if (!user && !inAuthGroup) {
+      router.replace('/auth_group/login');
+    } 
+    // If authenticated and in auth group, force to tabs
+    else if (user && inAuthGroup) {
+      router.replace('/(tabs)');
+    }
+  }, [user, loading, segments]);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator animating size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="auth_group/login" />
+    </Stack>
+  );
+}
+
+const styles = StyleSheet.create({ center: { flex: 1, justifyContent: 'center', alignItems: 'center' } });
