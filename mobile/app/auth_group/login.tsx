@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
-import { TextInput, Button, Title, Paragraph, Avatar, Snackbar, useTheme } from 'react-native-paper';
+import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Alert, Image } from 'react-native';
+import { TextInput, Button, Title, Paragraph, Snackbar, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/lib/auth-context';
 
@@ -49,7 +49,7 @@ export default function Login() {
       >
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <Avatar.Icon size={84} icon="camera" />
+            <Image source={require('../../assets/images/icon.png')} style={{ width: 84, height: 84, resizeMode: 'contain' }} />
             <Title style={styles.title}>Welcome back</Title>
             <Paragraph style={styles.subtitle}>Sign in to continue to Instagram</Paragraph>
           </View>
