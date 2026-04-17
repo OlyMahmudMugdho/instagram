@@ -29,10 +29,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [logoutPending, setLogoutPending] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !pathname.startsWith("/post/")) {
       router.replace("/login");
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname]);
 
   if (loading) {
     return (
@@ -42,7 +42,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) return null;
+  if (!user && !pathname.startsWith("/post/")) return null;
 
   const handleMenuClick = (key: string) => {
     router.push(key);
@@ -54,15 +54,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   const userMenu: MenuProps = {
-    items: [
+    items: user ? [
       { key: "profile", label: "My Profile" },
       { key: "logout", icon: <LogoutOutlined />, label: "Logout", danger: true },
+    ] : [
+      { key: "login", label: "Login" },
     ],
     onClick: ({ key }) => {
       if (key === "profile") {
         router.push("/profile");
-      }
-      if (key === "logout") {
+      } else if (key === "login") {
+        router.push("/login");
+      } else if (key === "logout") {
         void handleLogout();
       }
     },
@@ -91,24 +94,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             
             {!screens.md && (
                <Dropdown menu={userMenu} placement="bottomRight">
-                 <Avatar style={{ cursor: "pointer" }} src={user.avatar} icon={!user.avatar && <UserOutlined />} />
+                 <Avatar style={{ cursor: "pointer" }} src={user?.avatar} icon={!user?.avatar && <UserOutlined />} />
                </Dropdown>
             )}
 
             {screens.md && (
               <Space size={16}>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/posts/create")}>
-                  New Post
-                </Button>
+                {user && (
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/posts/create")}>
+                      New Post
+                    </Button>
+                )}
                 <Dropdown menu={userMenu} placement="bottomRight">
-                  <Avatar style={{ cursor: "pointer" }} src={user.avatar} icon={!user.avatar && <UserOutlined />} />
+                  <Avatar style={{ cursor: "pointer" }} src={user?.avatar} icon={!user?.avatar && <UserOutlined />} />
                 </Dropdown>
               </Space>
             )}
           </Header>
 
           <Layout style={{ marginTop: 64 }}>
-            {screens.md && (
+            {screens.md && user && (
               <Sider 
                 width={200} 
                 style={{ 
@@ -135,7 +140,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             <Layout style={{ 
               padding: screens.md ? "24px 16px" : "16px",
-              marginLeft: screens.md ? 200 : 0,
+              marginLeft: screens.md && user ? 200 : 0,
               minHeight: 'calc(100vh - 64px)'
             }}>
               <Content style={{ background: "#fff", padding: screens.md ? 24 : 12, minHeight: 280 }}>
@@ -144,7 +149,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Layout>
           </Layout>
           
-          {!screens.md && (
+          {!screens.md && user && (
             <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", background: "#fff", borderTop: "1px solid #f0f0f0", display: "flex", justifyContent: "space-around", padding: "10px 0", zIndex: 1000 }}>
               {menuItems.map(item => (
                 <div key={item.key} onClick={() => handleMenuClick(item.key)} style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", color: pathname === item.key ? "#1890ff" : "#595959" }}>

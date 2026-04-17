@@ -109,12 +109,12 @@ export default function ProfilePage() {
                           src={post.image}
                           alt={post.title}
                           style={{ width: "100%", aspectRatio: 1, objectFit: "cover", cursor: "pointer" }}
-                          onClick={() => router.push(`/post/${post._id}`)}
+                          onClick={() => router.push(`/post?postID=${post._id}`)}
                         />
                       ) : (
                         <div 
                           style={{ width: "100%", aspectRatio: 1, background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-                          onClick={() => router.push(`/post/${post._id}`)}
+                          onClick={() => router.push(`/post?postID=${post._id}`)}
                         >
                           <Text type="secondary">No Image</Text>
                         </div>

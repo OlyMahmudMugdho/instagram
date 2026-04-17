@@ -56,7 +56,7 @@ export default function FeedPage() {
   };
 
   const handleComment = (postId: string) => {
-    router.push(`/post/${postId}`);
+    router.push(`/post?postID=${postId}`);
   };
 
   const handleDelete = (post: Post) => {
@@ -137,7 +137,7 @@ export default function FeedPage() {
             <Card
               style={{ marginBottom: 16, width: "100%" }}
               hoverable
-              onClick={() => router.push(`/post/${post._id}`)}
+              onClick={() => router.push(`/post?postID=${post._id}`)}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <Meta

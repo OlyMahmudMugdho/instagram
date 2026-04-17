@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Card, Avatar, Button, Space, Typography, Spin, List, Input, Dropdown, MenuProps, Modal, message } from "antd";
 import { HeartOutlined, HeartFilled, SendOutlined, UserOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { postsService, Post, Comment, commentsService } from "@/services/posts";
-import { useAuth } from "@/lib/auth-context";
 
-const { Title, Text, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 
-export default function ClientPost() {
-  const params = useParams();
+export default function PostPage() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const postId = params.id as string;
-  const { user } = useAuth();
+  const postId = searchParams.get("postID");
+  const [user, setUser] = useState<any>(null);
   
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -23,10 +22,13 @@ export default function ClientPost() {
   const [editContent, setEditContent] = useState("");
 
   useEffect(() => {
-    loadPost();
+    if (postId) {
+      loadPost();
+    }
   }, [postId]);
 
   const loadPost = async () => {
+    if (!postId) return;
     setLoading(true);
     try {
       const res = await postsService.getPost(postId);
