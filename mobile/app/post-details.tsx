@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
-import { Card, Text, IconButton, Avatar, Button, List } from 'react-native-paper';
-import { useLocalSearchParams } from 'expo-router';
+import { View, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { Card, Text, IconButton, Avatar, Button, List, Menu } from 'react-native-paper';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { interactionService } from '../src/services/interactions';
+import { postsService } from '../src/services/posts';
+import { useAuth } from '../src/lib/auth-context';
 
 interface PostComment {
   _id: string;
@@ -15,9 +17,13 @@ interface PostComment {
 export default function PostDetails() {
   const { post: postParam } = useLocalSearchParams();
   const post = JSON.parse(postParam as string);
+  const router = useRouter();
+  const { user } = useAuth();
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<PostComment[]>([]);
   const [liked, setLiked] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const isOwner = user?._id === post.userId;
 
   useEffect(() => {
     loadStatus();
@@ -51,6 +57,35 @@ export default function PostDetails() {
     }
   };
 
+  const onEdit = () => {
+    setMenuVisible(false);
+    router.push({ pathname: '/edit-post', params: { post: JSON.stringify(post) } });
+  };
+
+  const onDelete = async () => {
+    setMenuVisible(false);
+    Alert.alert('Confirm', 'Delete this post?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const res = await postsService.deletePost(post.userId, post.postId);
+            if (res.success) {
+              Alert.alert('Deleted');
+              router.replace('/(tabs)');
+            } else {
+              Alert.alert('Error', String(res.message || 'Delete failed'));
+            }
+          } catch (err) {
+            Alert.alert('Error', String(err));
+          }
+        }
+      }
+    ]);
+  };
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -61,7 +96,19 @@ export default function PostDetails() {
               post.avatar || post.profilePicture ? 
                 <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
                 <Avatar.Text {...props} label={post.username[0]} />
-            )} 
+            )}
+            right={(props) => (
+              isOwner ? (
+                <Menu
+                  visible={menuVisible}
+                  onDismiss={() => setMenuVisible(false)}
+                  anchor={<IconButton {...props} icon="dots-vertical" onPress={() => setMenuVisible(true)} />}
+                >
+                  <Menu.Item onPress={onEdit} title="Edit" />
+                  <Menu.Item onPress={onDelete} title="Delete" />
+                </Menu>
+              ) : null
+            )}
           />
           <Card.Content style={styles.content}>
             <Text variant="titleMedium">{post.title}</Text>

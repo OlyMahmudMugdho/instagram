@@ -58,6 +58,8 @@ function AppContent() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="auth_group/login" />
+      <Stack.Screen name="auth_group/register" />
+      <Stack.Screen name="auth_group/forgot-password" />
     </Stack>
   );
 }

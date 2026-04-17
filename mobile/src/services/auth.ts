@@ -7,6 +7,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  name: string;
+  email: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   message?: string;
@@ -53,6 +60,31 @@ export const authService = {
       if (body.refreshToken) await save('refreshToken', body.refreshToken);
 
       return { success: true, message: body.message || 'Logged in', user: body.user, accessToken: body.accessToken, refreshToken: body.refreshToken };
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  register: async (data: RegisterRequest): Promise<AuthResponse> => {
+    await remove('accessToken');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        return { success: false, message: (body && body.message) || 'Registration failed' };
+      }
+
+      if (body.accessToken) await save('accessToken', body.accessToken);
+      if (body.refreshToken) await save('refreshToken', body.refreshToken);
+
+      return { success: true, message: body.message || 'Registered', user: body.user, accessToken: body.accessToken, refreshToken: body.refreshToken };
     } catch (err) {
       throw err;
     }
@@ -114,6 +146,51 @@ export const authService = {
       });
       const body = await res.json().catch(() => ({}));
       return { success: res.ok, message: body.message || '' } as AuthResponse;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  forgotPassword: async (email: string): Promise<AuthResponse> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/reset/password/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+      });
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, message: body.message || '' };
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  verifyResetCode: async (email: string, code: string): Promise<AuthResponse> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/reset/password/final`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, code }),
+      });
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, message: body.message || '' };
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  resetPassword: async (email: string, newPassword: string, recheck: string): Promise<AuthResponse> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/reset/password/change`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, newPassword, recheck }),
+      });
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, message: body.message || '' };
     } catch (err) {
       throw err;
     }

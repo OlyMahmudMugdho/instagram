@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Card, Avatar, IconButton, Text, Menu, Button } from 'react-native-paper';
+import { View, StyleSheet, Pressable, Alert } from 'react-native';
+import { Card, Avatar, IconButton, Text, Menu } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { interactionService } from '../../src/services/interactions';
 import { postsService } from '../../src/services/posts';
@@ -72,8 +72,15 @@ export default function PostCard({ post }: PostCardProps) {
   };
 
   return (
-    <TouchableOpacity onPress={handlePress}>
-      <Card style={styles.card} elevation={2}>
+    <Pressable
+      onPress={handlePress}
+      style={({ hovered, pressed }) => [
+        styles.pressable,
+        hovered && styles.pressableHover,
+        pressed && styles.pressablePressed,
+      ]}
+    >
+      <Card style={styles.card} elevation={1}>
         <Card.Title
           title={<Text>{post.username || 'Unknown'}</Text>}
           left={(props) => (
@@ -109,12 +116,28 @@ export default function PostCard({ post }: PostCardProps) {
           </View>
         </Card.Actions>
       </Card>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 12, marginVertical: 8 },
+  pressable: {
+    marginHorizontal: 12,
+    marginVertical: 8,
+    borderRadius: 12,
+  },
+  pressableHover: {
+    opacity: 0.98,
+    transform: [{ translateY: -1 }],
+  },
+  pressablePressed: {
+    opacity: 0.96,
+    transform: [{ scale: 0.995 }],
+  },
+  card: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
   content: { marginTop: 8 },
   actions: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   leftAction: { flexDirection: 'row', alignItems: 'center' },

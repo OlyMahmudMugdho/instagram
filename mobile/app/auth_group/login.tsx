@@ -4,8 +4,6 @@ import { TextInput, Button, Title, Paragraph, Avatar, Snackbar, useTheme } from 
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/lib/auth-context';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'http://10.0.2.2:5000';
-
 
 
 export default function Login() {
@@ -97,7 +95,7 @@ export default function Login() {
 
             <Button
               mode="text"
-              onPress={() => router.push('/forgot-password')}
+              onPress={() => router.push('/auth_group/forgot-password')}
               labelStyle={{ color: theme.colors.primary }}
             >
               Forgot password?
@@ -107,7 +105,7 @@ export default function Login() {
 
             <Button
               mode="outlined"
-              onPress={() => router.push('/register')}
+              onPress={() => router.push('/auth_group/register')}
               style={styles.button}
               labelStyle={{ color: theme.colors.primary }}
             >

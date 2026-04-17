@@ -10,7 +10,7 @@ export default function Explore() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
-  const [requests, setRequests] = useState<Record<string, boolean>>({});
+  const [requesting, setRequesting] = useState<Record<string, boolean>>({});
   const [query, setQuery] = useState('');
 
   const load = async () => {
@@ -35,14 +35,15 @@ export default function Explore() {
   );
 
   const handleSend = async (userID: string) => {
-    setRequests(prev => ({ ...prev, [userID]: true }));
+    setRequesting(prev => ({ ...prev, [userID]: true }));
     const res = await friendsService.sendRequest(userID);
     if (res.success) {
       Alert.alert('Success', 'Friend request sent');
+      setSuggestions(prev => prev.filter(user => user.userID !== userID));
     } else {
       Alert.alert('Error', String(res.message || 'Failed to send request'));
-      setRequests(prev => ({ ...prev, [userID]: false }));
     }
+    setRequesting(prev => ({ ...prev, [userID]: false }));
   };
 
   const handleSearch = async (text: string) => {
@@ -87,8 +88,8 @@ export default function Explore() {
               subtitle={`@${item.username}`}
               left={(props) => <Avatar.Text {...props} label={(item.name || item.username || 'U').slice(0,1).toUpperCase()} />}
               right={() => (
-                <Button mode="contained" onPress={() => handleSend(item.userID)} loading={!!requests[item.userID]} disabled={!!requests[item.userID]} style={styles.followBtn}>
-                  {requests[item.userID] ? 'Requested' : 'Follow'}
+                <Button mode="contained" onPress={() => handleSend(item.userID)} loading={!!requesting[item.userID]} disabled={!!requesting[item.userID]} style={styles.followBtn}>
+                  Follow
                 </Button>
               )}
             />
