@@ -1,6 +1,7 @@
 const Comment = require('../models/Comment');
 const Followers = require('../models/Followers');
 const Post = require('../models/Post');
+const Users = require('../models/Users');
 
 
 const getAllComments = async (req, res) => {
@@ -45,9 +46,20 @@ const getAllComments = async (req, res) => {
         });
     }
 
+    const comments = await Promise.all(foundComments.map(async (comment) => {
+        const user = await Users.findOne({ userID: comment.commentor });
+        return {
+            _id: comment._id,
+            commentID: comment.commentID,
+            username: user?.username || 'Unknown',
+            text: comment.comment,
+            createdAt: comment.date
+        };
+    }));
+
     return res.status(200).json({
         success: true,
-        data: foundComments
+        data: comments
     });
 }
 

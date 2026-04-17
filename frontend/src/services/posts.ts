@@ -70,7 +70,6 @@ export const postsService = {
 export interface Comment {
   _id: string;
   commentID: string;
-  commentor: string;
   username: string;
   text: string;
   createdAt: string;
@@ -92,10 +91,9 @@ export const commentsService = {
               comments: res.data.map((c: any) => ({
                   _id: c._id,
                   commentID: c.commentID,
-                  commentor: c.commentor,
-                  username: 'User', // Backend doesn't return username in comment
-                  text: c.comment,
-                  createdAt: c.date
+                  username: c.username || 'User',
+                  text: c.text || c.comment,
+                  createdAt: c.createdAt || c.date
               }))
           };
       }
