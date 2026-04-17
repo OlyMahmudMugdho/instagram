@@ -45,5 +45,25 @@ export const postsService = {
       return { success: false, message: String(err) };
     }
   },
+
+  getUserPosts: async (userID: string) => {
+    try {
+      const tokenRes = await authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/posts/myposts?userID=${userID}`, {
+        method: 'GET',
+        headers,
+      });
+
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, ...body };
+    } catch (err) {
+      return { success: false, message: String(err) };
+    }
+  },
 };
 
