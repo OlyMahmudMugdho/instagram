@@ -3,6 +3,7 @@ import { Provider as PaperProvider, MD3LightTheme, ActivityIndicator } from 'rea
 import { AuthProvider, useAuth } from '../src/lib/auth-context';
 import { View, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const theme = {
   ...MD3LightTheme,
@@ -15,11 +16,13 @@ const theme = {
 
 export default function RootLayout() {
   return (
-    <PaperProvider theme={theme}>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </PaperProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PaperProvider theme={theme}>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </PaperProvider>
+    </GestureHandlerRootView>
   );
 }
 

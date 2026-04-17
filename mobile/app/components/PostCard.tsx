@@ -1,46 +1,78 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { Card, Avatar, IconButton } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Card, Avatar, IconButton, Text } from 'react-native-paper';
+import { useRouter } from 'expo-router';
+import { interactionService } from '../../src/services/interactions';
 
 interface PostCardProps {
   post: any;
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const imageUri = post.image;
+  const router = useRouter();
+  const [liked, setLiked] = React.useState(!!post.isLiked);
+  const [likesCount, setLikesCount] = React.useState(Number(post.likes) || 0);
+
+  // Initialize liked status
+  React.useEffect(() => {
+    const checkStatus = async () => {
+      const status = await interactionService.isLiked(post.userId, post.postId);
+      setLiked(status);
+    };
+    checkStatus();
+  }, [post.userId, post.postId]);
+
+  const handleLike = async () => {
+    const newLiked = !liked;
+    setLiked(newLiked);
+    setLikesCount(prev => newLiked ? prev + 1 : Math.max(0, prev - 1));
+    
+    if (newLiked) {
+      await interactionService.likePost(post.userId, post.postId);
+    } else {
+      await interactionService.unlikePost(post.userId, post.postId);
+    }
+  };
+
+  const handlePress = () => {
+    router.push({
+      pathname: '/post-details',
+      params: { post: JSON.stringify({ ...post, isLiked: liked, likes: likesCount }) }
+    });
+  };
 
   return (
-    <Card style={styles.card} elevation={2}>
-      <Card.Title
-        title={post.username || 'Unknown'}
-        subtitle={post.createdAt ? new Date(post.createdAt).toLocaleString() : 'Invalid Date'}
-        left={(props) => <Avatar.Text {...props} label={(post.username || 'U').slice(0, 1).toUpperCase()} />}
-      />
-      <Card.Content>
-        <Text style={styles.contentText}>{post.title}</Text>
-      </Card.Content>
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
-      ) : null}
-      <Card.Actions style={styles.actions}>
-        <View style={styles.row}>
-          <IconButton icon="heart-outline" size={20} />
-          <Text style={styles.metaText}>{post.likes || 0}</Text>
-        </View>
-        <View style={styles.row}>
-          <IconButton icon="comment-outline" size={20} />
-          <Text style={styles.metaText}>{post.comments || 0}</Text>
-        </View>
-      </Card.Actions>
-    </Card>
+    <TouchableOpacity onPress={handlePress}>
+      <Card style={styles.card} elevation={2}>
+        <Card.Title
+          title={<Text>{post.username || 'Unknown'}</Text>}
+          left={(props) => (
+            post.avatar || post.profilePicture ? 
+              <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
+              <Avatar.Text {...props} label={(post.username || 'U').slice(0, 1).toUpperCase()} />
+          )}
+        />
+        {post.image ? <Card.Cover source={{ uri: post.image }} /> : null}
+        <Card.Content style={styles.content}>
+          <Text variant="bodyMedium">{post.title}</Text>
+        </Card.Content>
+        <Card.Actions>
+          <View style={styles.actionRow}>
+            <IconButton icon={liked ? "heart" : "heart-outline"} iconColor={liked ? "red" : undefined} onPress={handleLike} />
+            <Text variant="bodyMedium">{likesCount}</Text>
+          </View>
+          <View style={styles.actionRow}>
+            <IconButton icon="comment-outline" onPress={handlePress} />
+            <Text variant="bodyMedium">{post.comments || 0}</Text>
+          </View>
+        </Card.Actions>
+      </Card>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: 12, marginVertical: 8, borderRadius: 12, overflow: 'hidden' },
-  image: { width: '100%', height: 300, backgroundColor: '#f3f4f6' },
-  contentText: { marginVertical: 8, color: '#111827' },
-  actions: { justifyContent: 'space-between', paddingHorizontal: 8 },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  metaText: { marginLeft: 4, color: '#6b7280' },
+  card: { marginHorizontal: 12, marginVertical: 8 },
+  content: { marginTop: 8 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', marginRight: 10 },
 });

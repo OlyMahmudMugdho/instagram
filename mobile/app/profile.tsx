@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, SafeAreaView, FlatList, Image, Dimensions } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Title, Paragraph, Button, Avatar, ActivityIndicator } from 'react-native-paper';
 import { useAuth } from '../src/lib/auth-context';
 import { useRouter } from 'expo-router';
@@ -71,7 +72,9 @@ export default function Profile() {
         numColumns={3}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <Image source={{ uri: item.image }} style={styles.postImage} />
+          <TouchableOpacity onPress={() => router.push({ pathname: '/post-details', params: { post: JSON.stringify(item) } })}>
+            <Image source={{ uri: item.image }} style={styles.postImage} />
+          </TouchableOpacity>
         )}
       />
     </SafeAreaView>
