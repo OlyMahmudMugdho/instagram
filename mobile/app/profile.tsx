@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, FlatList, Image, Dimensions } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Title, Paragraph, Button, Avatar, ActivityIndicator } from 'react-native-paper';
 import { useAuth } from '../src/lib/auth-context';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { usersService } from '../src/services/users';
 import { postsService } from '../src/services/posts';
 
@@ -17,13 +18,15 @@ export default function Profile() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (authUser?._id) {
-      loadData();
-    }
-  }, [authUser]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (authUser?._id) {
+        loadData();
+      }
+    }, [authUser, loadData])
+  );
 
-  const loadData = async () => {
+  const loadData = React.useCallback(async () => {
     setLoading(true);
     const [profileRes, postsRes] = await Promise.all([
       usersService.getProfile(authUser._id),
@@ -32,7 +35,7 @@ export default function Profile() {
     if (profileRes.success && profileRes.message?.foundUser) setProfile(profileRes.message.foundUser);
     if (postsRes.success) setPosts(postsRes.posts || []);
     setLoading(false);
-  };
+  }, [authUser]);
 
   const handleLogout = async () => {
     await logout();
@@ -63,7 +66,7 @@ export default function Profile() {
               <Paragraph>@{profile?.username}</Paragraph>
             </View>
             <View style={styles.buttonContainer}>
-              <Button mode="outlined" onPress={() => {}} style={styles.actionBtn}>Edit Profile</Button>
+              <Button mode="outlined" onPress={() => router.push('/edit-profile')} style={styles.actionBtn}>Edit Profile</Button>
               <Button mode="outlined" onPress={handleLogout} style={styles.actionBtn}>Sign Out</Button>
             </View>
           </View>
