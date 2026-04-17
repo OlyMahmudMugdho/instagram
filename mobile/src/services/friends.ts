@@ -64,6 +64,44 @@ export const friendsService = {
     }
   },
 
+  follow: async (followingID: string) => {
+    try {
+      const tokenRes = await authService.getAccessToken();
+      const headers: Record<string, string> = {
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/follow/${followingID}`, {
+        method: 'GET',
+        headers,
+      });
+
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, ...body };
+    } catch (err) {
+      return { success: false, message: String(err) };
+    }
+  },
+
+  unfollow: async (followingID: string) => {
+    try {
+      const tokenRes = await authService.getAccessToken();
+      const headers: Record<string, string> = {
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/unfollow/${followingID}`, {
+        method: 'GET',
+        headers,
+      });
+
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, ...body };
+    } catch (err) {
+      return { success: false, message: String(err) };
+    }
+  },
+
   getRequests: async () => {
     try {
       const tokenRes = await authService.getAccessToken();

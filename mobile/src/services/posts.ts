@@ -66,6 +66,28 @@ export const postsService = {
     }
   },
 
+  getPublicPostCount: async (userID: string) => {
+    try {
+      const tokenRes = await authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/posts`, {
+        method: 'GET',
+        headers,
+      });
+
+      const body = await res.json().catch(() => ({}));
+      const allPosts = Array.isArray(body?.data) ? body.data : [];
+      const count = allPosts.filter((post: any) => post?.userID === userID).length;
+      return { success: res.ok, count, ...body };
+    } catch (err) {
+      return { success: false, message: String(err), count: 0 };
+    }
+  },
+
   createPost: async (imageUris: string[], content?: string) => {
     try {
       const tokenRes = await authService.getAccessToken();
@@ -138,4 +160,3 @@ export const postsService = {
     }
   },
 };
-
