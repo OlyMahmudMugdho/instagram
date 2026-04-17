@@ -67,13 +67,13 @@ export default function PostDetails() {
             <Text variant="titleMedium">{post.title}</Text>
           </Card.Content>
           {post.image ? <Card.Cover source={{ uri: post.image }} /> : null}
-          <Card.Actions>
-            <View style={styles.actionRow}>
+          <Card.Actions style={styles.actions}>
+            <View style={styles.leftAction}>
               <IconButton icon={liked ? "heart" : "heart-outline"} iconColor={liked ? "red" : undefined} onPress={handleLike} />
               <Text>{post.likes || 0}</Text>
             </View>
-            <View style={styles.actionRow}>
-              <IconButton icon="comment-outline" />
+            <View style={styles.rightAction}>
+              <IconButton icon="comment-outline" onPress={() => {}} />
               <Text>{comments.length}</Text>
             </View>
           </Card.Actions>
@@ -109,7 +109,9 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scrollContainer: { padding: 10, paddingTop: 40 },
   content: { paddingVertical: 15 },
-  actionRow: { flexDirection: 'row', alignItems: 'center', marginRight: 10 },
+  actions: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  leftAction: { flexDirection: 'row', alignItems: 'center' },
+  rightAction: { flexDirection: 'row', alignItems: 'center' },
   commentInputContainer: { flexDirection: 'row', alignItems: 'center', padding: 10, borderTopWidth: 1, borderColor: '#ccc', backgroundColor: '#fff', paddingBottom: 60 },
   input: { flex: 1 },
   commentCard: { marginVertical: 5 },

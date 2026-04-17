@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, SafeAreaView, Alert, Image } from 'react-native';
 import { TextInput, Button, ActivityIndicator, Title, Avatar } from 'react-native-paper';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../src/lib/auth-context';
 import { useRouter } from 'expo-router';
 import { usersService } from '../src/services/users';
@@ -33,8 +34,6 @@ export default function EditProfile() {
 
   const pickImage = async () => {
     try {
-      // eslint-disable-next-line import/no-unresolved
-      const ImagePicker = await import('expo-image-picker');
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         Alert.alert('Permission required', 'Permission to access photos is required to choose a profile picture.');
@@ -44,8 +43,8 @@ export default function EditProfile() {
       if (!result.canceled) {
         // new API returns assets array
         // @ts-ignore
-        const uri = result.assets?.[0]?.uri || result.uri;
-        setLocalImage(uri);
+        const uri = result.assets?.[0]?.uri || (result as any).uri;
+        setLocalImage(uri as string);
       }
     } catch (err) {
       console.error('Image pick error', err);

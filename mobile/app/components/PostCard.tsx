@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Card, Avatar, IconButton, Text } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Card, Avatar, IconButton, Text, Menu, Button } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { interactionService } from '../../src/services/interactions';
+import { postsService } from '../../src/services/posts';
+import { useAuth } from '../../src/lib/auth-context';
 
 interface PostCardProps {
   post: any;
@@ -10,8 +12,11 @@ interface PostCardProps {
 
 export default function PostCard({ post }: PostCardProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const [liked, setLiked] = React.useState(!!post.isLiked);
   const [likesCount, setLikesCount] = React.useState(Number(post.likes) || 0);
+  const [menuVisible, setMenuVisible] = React.useState(false);
+  const isOwner = user?._id === post.userId;
 
   // Initialize liked status
   React.useEffect(() => {
@@ -41,6 +46,31 @@ export default function PostCard({ post }: PostCardProps) {
     });
   };
 
+  const onEdit = () => {
+    setMenuVisible(false);
+    router.push({ pathname: '/edit-post', params: { post: JSON.stringify(post) } });
+  };
+
+  const onDelete = async () => {
+    setMenuVisible(false);
+    Alert.alert('Confirm', 'Delete this post?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        try {
+          const res = await postsService.deletePost(post.userId, post.postId);
+          if (res.success) {
+            Alert.alert('Deleted');
+            router.replace('/(tabs)');
+          } else {
+            Alert.alert('Error', String(res.message || 'Delete failed'));
+          }
+        } catch (err) {
+          Alert.alert('Error', String(err));
+        }
+      } }
+    ]);
+  };
+
   return (
     <TouchableOpacity onPress={handlePress}>
       <Card style={styles.card} elevation={2}>
@@ -51,17 +81,29 @@ export default function PostCard({ post }: PostCardProps) {
               <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
               <Avatar.Text {...props} label={(post.username || 'U').slice(0, 1).toUpperCase()} />
           )}
+          right={(props) => (
+            isOwner ? (
+              <Menu
+                visible={menuVisible}
+                onDismiss={() => setMenuVisible(false)}
+                anchor={<IconButton {...props} icon="dots-vertical" onPress={() => setMenuVisible(true)} />}
+              >
+                <Menu.Item onPress={onEdit} title="Edit" />
+                <Menu.Item onPress={onDelete} title="Delete" />
+              </Menu>
+            ) : null
+          )}
         />
-        {post.image ? <Card.Cover source={{ uri: post.image }} /> : null}
         <Card.Content style={styles.content}>
           <Text variant="bodyMedium">{post.title}</Text>
         </Card.Content>
-        <Card.Actions>
-          <View style={styles.actionRow}>
+        {post.image ? <Card.Cover source={{ uri: post.image }} /> : null}
+        <Card.Actions style={styles.actions}>
+          <View style={styles.leftAction}>
             <IconButton icon={liked ? "heart" : "heart-outline"} iconColor={liked ? "red" : undefined} onPress={handleLike} />
             <Text variant="bodyMedium">{likesCount}</Text>
           </View>
-          <View style={styles.actionRow}>
+          <View style={styles.rightAction}>
             <IconButton icon="comment-outline" onPress={handlePress} />
             <Text variant="bodyMedium">{post.comments || 0}</Text>
           </View>
@@ -74,5 +116,7 @@ export default function PostCard({ post }: PostCardProps) {
 const styles = StyleSheet.create({
   card: { marginHorizontal: 12, marginVertical: 8 },
   content: { marginTop: 8 },
-  actionRow: { flexDirection: 'row', alignItems: 'center', marginRight: 10 },
+  actions: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  leftAction: { flexDirection: 'row', alignItems: 'center' },
+  rightAction: { flexDirection: 'row', alignItems: 'center' },
 });

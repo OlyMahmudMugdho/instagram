@@ -65,5 +65,77 @@ export const postsService = {
       return { success: false, message: String(err) };
     }
   },
+
+  createPost: async (imageUris: string[], content?: string) => {
+    try {
+      const tokenRes = await authService.getAccessToken();
+      const headers: Record<string, string> = {
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
+      };
+
+      const formData = new FormData();
+      if (content) formData.append('content', content);
+
+      imageUris.forEach((uri, idx) => {
+        const filename = uri.split('/').pop() || `photo_${idx}.jpg`;
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
+        // @ts-ignore
+        formData.append('image', { uri, name: filename, type });
+      });
+
+      const res = await fetch(`${API_BASE_URL}/api/posts/create`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, ...body };
+    } catch (err) {
+      return { success: false, message: String(err) };
+    }
+  },
+
+  editPost: async (userId: string, postId: string, data: { content: string }) => {
+    try {
+      const tokenRes = await authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
+      };
+
+      const payload = { ...data, title: data.content };
+      const res = await fetch(`${API_BASE_URL}/api/posts/${userId}/${postId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, ...body };
+    } catch (err) {
+      return { success: false, message: String(err) };
+    }
+  },
+
+  deletePost: async (userId: string, postId: string) => {
+    try {
+      const tokenRes = await authService.getAccessToken();
+      const headers: Record<string, string> = {
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/posts/${userId}/${postId}`, {
+        method: 'DELETE',
+        headers,
+      });
+
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, ...body };
+    } catch (err) {
+      return { success: false, message: String(err) };
+    }
+  },
 };
 
