@@ -33,7 +33,6 @@
         "backgroundColor": "#000000"
       }
     },
-
     "plugins": [
       "expo-router",
       [
@@ -53,6 +52,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2e9d19a7-aa09-49f8-87ca-05624a3c4351"
+      }
+    },
+    "owner": "olymahmud"
   }
 }

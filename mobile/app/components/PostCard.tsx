@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import eventBus from '../../src/lib/eventBus';
 import { View, StyleSheet, Pressable, Alert } from 'react-native';
 import { Card, Avatar, IconButton, Text, Menu } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ export default function PostCard({ post }: PostCardProps) {
   const [likesCount, setLikesCount] = React.useState(Number(post.likes) || 0);
   const [menuVisible, setMenuVisible] = React.useState(false);
   const isOwner = user?._id === post.userId;
+  const suppressNavRef = useRef(false);
 
   // Initialize liked status
   React.useEffect(() => {
@@ -28,15 +30,35 @@ export default function PostCard({ post }: PostCardProps) {
   }, [post.userId, post.postId]);
 
   const handleLike = async () => {
+    suppressNavRef.current = true;
     const newLiked = !liked;
+    // optimistic update
     setLiked(newLiked);
-    setLikesCount(prev => newLiked ? prev + 1 : Math.max(0, prev - 1));
-    
-    if (newLiked) {
-      await interactionService.likePost(post.userId, post.postId);
-    } else {
-      await interactionService.unlikePost(post.userId, post.postId);
+    const newLikes = newLiked ? likesCount + 1 : Math.max(0, likesCount - 1);
+    setLikesCount(newLikes);
+
+    let ok = false;
+    try {
+      if (newLiked) {
+        ok = await interactionService.likePost(post.userId, post.postId);
+      } else {
+        ok = await interactionService.unlikePost(post.userId, post.postId);
+      }
+    } catch (e) {
+      ok = false;
     }
+
+    if (!ok) {
+      // rollback
+      setLiked(!newLiked);
+      setLikesCount(prev => newLiked ? Math.max(0, prev - 1) : prev + 1);
+    } else {
+      // notify other views (feed, details) to update
+      eventBus.emit('post:update', { postId: post.postId, likes: newLikes, isLiked: newLiked });
+    }
+
+    // allow short window to avoid parent navigation
+    setTimeout(() => { suppressNavRef.current = false; }, 350);
   };
 
   const handlePress = () => {
@@ -73,7 +95,7 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={() => { if (suppressNavRef.current) { suppressNavRef.current = false; return; } handlePress(); }}
       style={({ hovered, pressed }) => [
         styles.pressable,
         hovered && styles.pressableHover,

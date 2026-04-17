@@ -22,11 +22,21 @@ export default function PostDetails() {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<PostComment[]>([]);
   const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState<number>(Number(post.likes) || 0);
   const [menuVisible, setMenuVisible] = useState(false);
   const isOwner = user?._id === post.userId;
 
   useEffect(() => {
     loadStatus();
+
+    const unsub = require('../src/lib/eventBus').default.on('post:update', (payload: any) => {
+      if (payload.postId === post.postId) {
+        setLikesCount(payload.likes);
+        setLiked(payload.isLiked);
+      }
+    });
+
+    return () => { unsub(); };
   }, []);
 
   const loadStatus = async () => {
@@ -39,12 +49,19 @@ export default function PostDetails() {
   };
 
   const handleLike = async () => {
-    if (liked) {
-      await interactionService.unlikePost(post.userId, post.postId);
-      setLiked(false);
+    const newLiked = !liked;
+    setLiked(newLiked);
+    setLikesCount(prev => newLiked ? prev + 1 : Math.max(0, prev - 1));
+
+    const ok = newLiked ? await interactionService.likePost(post.userId, post.postId) : await interactionService.unlikePost(post.userId, post.postId);
+    if (!ok) {
+      // rollback
+      setLiked(!newLiked);
+      setLikesCount(prev => newLiked ? Math.max(0, prev - 1) : prev + 1);
     } else {
-      await interactionService.likePost(post.userId, post.postId);
-      setLiked(true);
+      // notify feed
+      const eventBus = require('../src/lib/eventBus').default;
+      eventBus.emit('post:update', { postId: post.postId, likes: newLiked ? likesCount + 1 : Math.max(0, likesCount - 1), isLiked: newLiked });
     }
   };
 
@@ -54,6 +71,23 @@ export default function PostDetails() {
     if (success) {
       setComment('');
       loadStatus();
+    } else {
+      Alert.alert('Error', 'Unable to post comment');
+    }
+  };
+
+  const formatTime = (iso?: string) => {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      const now = Date.now();
+      const diff = Math.floor((now - d.getTime()) / 1000);
+      if (diff < 60) return `${diff}s`;
+      if (diff < 3600) return `${Math.floor(diff/60)}m`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h`;
+      return d.toLocaleDateString();
+    } catch {
+      return '';
     }
   };
 
@@ -87,7 +121,7 @@ export default function PostDetails() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 80} style={styles.flex}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Card>
           <Card.Title 
@@ -117,7 +151,7 @@ export default function PostDetails() {
           <Card.Actions style={styles.actions}>
             <View style={styles.leftAction}>
               <IconButton icon={liked ? "heart" : "heart-outline"} iconColor={liked ? "red" : undefined} onPress={handleLike} />
-              <Text>{post.likes || 0}</Text>
+              <Text>{likesCount}</Text>
             </View>
             <View style={styles.rightAction}>
               <IconButton icon="comment-outline" onPress={() => {}} />
@@ -132,6 +166,12 @@ export default function PostDetails() {
               <Card.Title 
                 title={c.username || 'Unknown'} 
                 subtitle={c.text}
+                left={(props) => (
+                  c.profilePicture ? <Avatar.Image {...props} source={{ uri: c.profilePicture }} /> : <Avatar.Text {...props} label={(c.username || 'U').slice(0,1).toUpperCase()} />
+                )}
+                right={(props) => (
+                  <Text {...props} variant="bodySmall">{formatTime(c.createdAt)}</Text>
+                )}
               />
             </Card>
           ))}

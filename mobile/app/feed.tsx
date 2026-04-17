@@ -3,6 +3,7 @@ import { View, FlatList, RefreshControl, StyleSheet, SafeAreaView } from 'react-
 import { ActivityIndicator, Title } from 'react-native-paper';
 import PostCard from './components/PostCard';
 import { postsService } from '../src/services/posts';
+import eventBus from '../src/lib/eventBus';
 
 export default function Feed() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -31,6 +32,12 @@ export default function Feed() {
 
   useEffect(() => {
     loadPage(true);
+
+    const unsub = eventBus.on('post:update', (payload: any) => {
+      setPosts(prev => prev.map(p => p.postId === payload.postId ? { ...p, likes: payload.likes, isLiked: payload.isLiked } : p));
+    });
+
+    return () => { unsub(); };
   }, []);
 
   const onRefresh = async () => {

@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from '../src/lib/auth-context';
 import { View, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StatusBar } from 'expo-status-bar';
 
 const theme = {
   ...MD3LightTheme,
@@ -17,6 +18,7 @@ const theme = {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style="dark" />
       <PaperProvider theme={theme}>
         <AuthProvider>
           <AppContent />
