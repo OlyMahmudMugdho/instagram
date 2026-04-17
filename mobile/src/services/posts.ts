@@ -8,20 +8,42 @@ export const postsService = {
       const tokenRes = await authService.getAccessToken();
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...(tokenRes && tokenRes.accessToken ? { Authorization: `Bearer ${tokenRes.accessToken}` } : {}),
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
       };
 
       const res = await fetch(`${API_BASE_URL}/api/posts/${page}`, {
         method: 'GET',
         headers,
-        credentials: 'include',
       });
 
       const body = await res.json().catch(() => ({}));
+      console.log('Posts fetch status:', res.status, 'body:', body);
       if (res.ok) return { success: true, ...body };
+      if (res.status === 404 && body.end) return { success: true, data: [], pages: 0 };
       return { success: false, message: body.message || 'Failed to fetch posts' };
     } catch (err) {
       return { success: false, message: String(err) };
     }
   },
+
+  getFeed: async () => {
+    try {
+      const tokenRes = await authService.getAccessToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(tokenRes && tokenRes.accessToken ? { 'Authorization': `Bearer ${tokenRes.accessToken}` } : {}),
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/feed`, {
+        method: 'GET',
+        headers,
+      });
+
+      const body = await res.json().catch(() => ({}));
+      return { success: res.ok, ...body };
+    } catch (err) {
+      return { success: false, message: String(err) };
+    }
+  },
 };
+

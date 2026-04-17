@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import { storage } from '../lib/storage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'http://10.0.2.2:5000';
 
@@ -17,17 +17,17 @@ export interface AuthResponse {
 
 async function save(key: string, value: string) {
   try {
-    await SecureStore.setItemAsync(key, value);
+    await storage.setItem(key, value);
   } catch (e) {
-    console.warn('SecureStore save error', e);
+    console.warn('Storage save error', e);
   }
 }
 
 async function remove(key: string) {
   try {
-    await SecureStore.deleteItemAsync(key);
+    await storage.deleteItem(key);
   } catch (e) {
-    console.warn('SecureStore delete error', e);
+    console.warn('Storage delete error', e);
   }
 }
 
@@ -60,8 +60,8 @@ export const authService = {
 
   getAccessToken: async (): Promise<AuthResponse> => {
     try {
-      // Try to include refresh token stored in SecureStore as Authorization header
-      const refreshToken = await SecureStore.getItemAsync('refreshToken');
+      // Try to include refresh token stored in storage as Authorization header
+      const refreshToken = await storage.getItem('refreshToken');
       const headers: Record<string, string> = {};
       if (refreshToken) headers['Authorization'] = `Bearer ${refreshToken}`;
 
@@ -80,6 +80,7 @@ export const authService = {
       throw err;
     }
   },
+// ... (rest of the file remains same, but using save/remove functions)
 
   getToken: async (): Promise<AuthResponse> => {
     try {
