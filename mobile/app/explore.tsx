@@ -5,9 +5,11 @@ import { useRouter } from 'expo-router';
 import { friendsService } from '../src/services/friends';
 import { usersService } from '../src/services/users';
 import { useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../src/lib/auth-context';
 
 export default function Explore() {
   const router = useRouter();
+  const { user: authUser } = useAuth();
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
@@ -27,6 +29,7 @@ export default function Explore() {
           username: cached.username || item.username,
           profilePicture: cached.profilePicture || null,
           isFollowing: !!cached.isFollowing,
+          isSelf: item.userID === authUser?._id,
         };
       }
 
@@ -41,10 +44,11 @@ export default function Explore() {
         username: foundUser?.username || item.username,
         profilePicture: foundUser?.profilePicture || null,
         isFollowing: !!foundUser?.isFollowing,
+        isSelf: item.userID === authUser?._id,
       };
     }));
     setSuggestions(detailed);
-  }, []);
+  }, [authUser?._id]);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -137,7 +141,7 @@ export default function Explore() {
         data={suggestions}
         keyExtractor={(item) => item.userID}
         renderItem={({ item }) => (
-          <Card style={styles.card} onPress={() => router.push(`/user/${item.userID}`)}>
+          <Card style={styles.card} onPress={() => router.push(item.isSelf ? '/(tabs)/profile' : `/user/${item.userID}`)}>
             <Card.Title
               title={item.name || item.username}
               subtitle={`@${item.username}`}
@@ -147,17 +151,21 @@ export default function Explore() {
                   : <Avatar.Text {...props} label={(item.name || item.username || 'U').slice(0,1).toUpperCase()} />
               )}
               right={() => (
-                <Button
-                  mode="contained"
-                  buttonColor={item.isFollowing ? '#ef4444' : undefined}
-                  textColor={item.isFollowing ? '#ffffff' : undefined}
-                  onPress={() => handleFollowToggle(item)}
-                  loading={!!requesting[item.userID]}
-                  disabled={!!requesting[item.userID]}
-                  style={styles.followBtn}
-                >
-                  {item.isFollowing ? 'Unfollow' : 'Follow'}
-                </Button>
+                item.isSelf ? null : (
+                  <View style={styles.followBtnWrap}>
+                    <Button
+                      mode="contained"
+                      buttonColor={item.isFollowing ? '#ef4444' : undefined}
+                      textColor={item.isFollowing ? '#ffffff' : undefined}
+                      onPress={() => handleFollowToggle(item)}
+                      loading={!!requesting[item.userID]}
+                      disabled={!!requesting[item.userID]}
+                      style={styles.followBtn}
+                    >
+                      {item.isFollowing ? 'Unfollow' : 'Follow'}
+                    </Button>
+                  </View>
+                )
               )}
             />
           </Card>
@@ -175,4 +183,5 @@ const styles = StyleSheet.create({
   search: { flex: 1 },
   requestsBtn: { marginLeft: 8 },
   followBtn: { borderRadius: 6 },
+  followBtnWrap: { paddingRight: 8 },
 });
