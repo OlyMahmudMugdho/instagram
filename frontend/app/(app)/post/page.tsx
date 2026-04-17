@@ -5,14 +5,15 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Card, Avatar, Button, Space, Typography, Spin, List, Input, Dropdown, MenuProps, Modal, message } from "antd";
 import { HeartOutlined, HeartFilled, SendOutlined, UserOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { postsService, Post, Comment, commentsService } from "@/services/posts";
+import { useAuth } from "@/lib/auth-context";
 
 const { Text, Paragraph } = Typography;
 
 export default function PostPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const postId = searchParams.get("postID");
-  const [user, setUser] = useState<any>(null);
   
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -22,10 +23,16 @@ export default function PostPage() {
   const [editContent, setEditContent] = useState("");
 
   useEffect(() => {
-    if (postId) {
+    if (!authLoading && !user) {
+      router.push("/login");
+    }
+  }, [authLoading, user, router]);
+
+  useEffect(() => {
+    if (postId && user) {
       loadPost();
     }
-  }, [postId]);
+  }, [postId, user]);
 
   const loadPost = async () => {
     if (!postId) return;
