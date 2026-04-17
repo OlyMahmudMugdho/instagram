@@ -2,6 +2,7 @@ const Posts = require('../models/Post');
 const Users = require('../models/Users');
 const Photo = require('../models/Photo');
 const Friend = require('../models/Friend');
+const Likes = require('../models/Likes');
 
 const getFeed = async (req, res) => {
     const userID = req.userID;
@@ -29,6 +30,8 @@ const getFeed = async (req, res) => {
                 displayImage = post.imageUrl[0];
             }
 
+            const liked = await Likes.findOne({ userID, postId: post.postId });
+
             return {
                 _id: post._id,
                 postId: post.postId,
@@ -41,7 +44,7 @@ const getFeed = async (req, res) => {
                 likes: post.likes,
                 comments: post.comments,
                 createdAt: post.date,
-                isLiked: false
+                isLiked: !!liked
             };
         }));
         

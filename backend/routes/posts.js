@@ -9,6 +9,7 @@ const verifyAccessToken = require('../middlewares/verifyAccessToken');
 const fileUpload = require('express-fileupload');
 const editPostController = require('../controllers/editPostController');
 const getSinglePostController = require('../controllers/getSinglePostController');
+const optionalAuth = require('../middlewares/optionalAuth');
 const deletePostController = require('../controllers/deletePostController');
 const change = require('../middlewares/changeParam').change;
 const multer = require('multer');
@@ -53,7 +54,7 @@ router.route('/posts/:page/experimental')
     .get(checkJWT.check, verifyAccessToken.verifyAccess, CopygetPaginatedPostsController.getPaginatedPosts)
 
 router.route('/posts/get/:id')
-    .get(getSinglePostController.getSinglePost)
+    .get(optionalAuth.optionalAuth, getSinglePostController.getSinglePost)
 
 router.route('/posts/:postUserID/:postId')
     .get(getSinglePostController.getSinglePost)

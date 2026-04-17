@@ -1,9 +1,11 @@
 const Post = require('../models/Post');
 const Users = require('../models/Users');
 const Photo = require('../models/Photo');
+const Likes = require('../models/Likes');
 
 const getSinglePost = async (req, res) => {
     const postId = req.params.id;
+    const userID = req.userID;
     
     if (!postId) {
         return res.status(400).json({
@@ -31,6 +33,8 @@ const getSinglePost = async (req, res) => {
         } else if (foundPost.imageUrl && foundPost.imageUrl.length > 0) {
             displayImage = foundPost.imageUrl[0];
         }
+
+        const liked = userID ? await Likes.findOne({ userID, postId: foundPost.postId }) : null;
         
         return res.status(200).json({
             success: true,
@@ -46,7 +50,7 @@ const getSinglePost = async (req, res) => {
                 likes: foundPost.likes,
                 comments: foundPost.comments,
                 createdAt: foundPost.date,
-                isLiked: false
+                isLiked: !!liked
             }
         });
     } catch (error) {
