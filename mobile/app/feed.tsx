@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import { View, FlatList, RefreshControl, StyleSheet, SafeAreaView } from 'react-native';
 import { ActivityIndicator, Title } from 'react-native-paper';
 import PostCard from './components/PostCard';
 import { postsService } from '../src/services/posts';
@@ -51,7 +51,7 @@ export default function Feed() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Title style={styles.title}>Feed</Title>
       <FlatList
         data={posts}
@@ -62,12 +62,12 @@ export default function Feed() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListEmptyComponent={!loading && posts.length === 0 ? <View style={styles.center}><Title>No posts yet</Title></View> : null}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 12 },
+  container: { flex: 1, paddingTop: 20 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   title: { paddingHorizontal: 12, marginBottom: 6 },
 });
