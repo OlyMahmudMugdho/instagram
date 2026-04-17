@@ -55,7 +55,15 @@ export const interactionService = {
         headers: { ...(tokenRes?.accessToken ? { Authorization: `Bearer ${tokenRes.accessToken}` } : {}) },
       });
       const body = await res.json().catch(() => ({}));
-      return body.data || [];
+      if (!Array.isArray(body.data)) return [];
+
+      return body.data.map((comment: any) => ({
+        _id: comment._id,
+        commentID: comment.commentID,
+        username: comment.username || 'Unknown',
+        text: comment.text || comment.comment || '',
+        createdAt: comment.createdAt || comment.date,
+      }));
     } catch {
       return [];
     }

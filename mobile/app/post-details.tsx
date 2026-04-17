@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Card, Text, IconButton, Avatar, Button, List } from 'react-native-paper';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { interactionService } from '../src/services/interactions';
+
+interface PostComment {
+  _id: string;
+  commentID: string;
+  username: string;
+  text: string;
+  createdAt?: string;
+}
 
 export default function PostDetails() {
   const { post: postParam } = useLocalSearchParams();
   const post = JSON.parse(postParam as string);
-  const router = useRouter();
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<PostComment[]>([]);
   const [liked, setLiked] = useState(false);
 
   useEffect(() => {
@@ -73,11 +80,11 @@ export default function PostDetails() {
         </Card>
         
         <List.Section title="Comments">
-          {comments.map((c: any, index: number) => (
+          {comments.map((c, index: number) => (
             <Card key={index} style={styles.commentCard}>
               <Card.Title 
-                title={c.commentor || 'Unknown'} 
-                subtitle={c.comment}
+                title={c.username || 'Unknown'} 
+                subtitle={c.text}
               />
             </Card>
           ))}
