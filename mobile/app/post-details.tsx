@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, Keyboard, Pressable, Modal, Image } from 'react-native';
 import { Card, Text, IconButton, Avatar, Button, List, Menu } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
 import { interactionService } from '../src/services/interactions';
 import { postsService } from '../src/services/posts';
 import { useAuth } from '../src/lib/auth-context';
@@ -25,6 +27,8 @@ export default function PostDetails() {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState<number>(Number(post.likes) || 0);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [downloadingImage, setDownloadingImage] = useState(false);
   const isOwner = user?._id === post.userId;
   const insets = useSafeAreaInsets();
 
@@ -123,6 +127,53 @@ export default function PostDetails() {
     ]);
   };
 
+  const onDownloadImage = async () => {
+    if (!post.image || downloadingImage) return;
+
+    setDownloadingImage(true);
+    try {
+      const permission = await MediaLibrary.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permission required', 'Please allow photo library access to download images.');
+        return;
+      }
+
+      const cleanUrl = String(post.image).split('?')[0];
+      const extMatch = cleanUrl.match(/\.(jpg|jpeg|png|webp)$/i);
+      const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+      const targetPath = `${FileSystem.cacheDirectory}post-${post.postId || Date.now()}.${ext}`;
+      const downloaded = await FileSystem.downloadAsync(String(post.image), targetPath);
+
+      if (downloaded.status >= 200 && downloaded.status < 300) {
+        const asset = await MediaLibrary.createAssetAsync(downloaded.uri);
+        const albumName = 'pixl';
+        const existingAlbum = await MediaLibrary.getAlbumAsync(albumName);
+
+        if (existingAlbum) {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], existingAlbum, false);
+        } else {
+          await MediaLibrary.createAlbumAsync(albumName, asset, false);
+        }
+
+        Alert.alert('Saved', 'Image downloaded to the pixl folder.');
+      } else {
+        Alert.alert('Error', 'Failed to download image');
+      }
+    } catch {
+      Alert.alert('Error', 'Failed to download image');
+    } finally {
+      setDownloadingImage(false);
+    }
+  };
+
+  const onOpenImageActions = () => {
+    if (downloadingImage) return;
+    Alert.alert('Image options', 'Choose what you want to do with this image.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Download to phone', onPress: onDownloadImage },
+    ]);
+  };
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0} style={styles.flex}>
       <ScrollView
@@ -155,7 +206,11 @@ export default function PostDetails() {
           <Card.Content style={styles.content}>
             <Text variant="titleMedium">{post.title}</Text>
           </Card.Content>
-          {post.image ? <Card.Cover source={{ uri: post.image }} /> : null}
+          {post.image ? (
+            <Pressable onPress={() => setImageViewerVisible(true)}>
+              <Card.Cover source={{ uri: post.image }} />
+            </Pressable>
+          ) : null}
           <Card.Actions style={styles.actions}>
             <View style={styles.leftAction}>
               <IconButton icon={liked ? "heart" : "heart-outline"} iconColor={liked ? "red" : undefined} onPress={handleLike} />
@@ -199,6 +254,27 @@ export default function PostDetails() {
         />
         <Button mode="outlined" onPress={handleComment}>Post</Button>
       </View>
+
+      <Modal
+        visible={imageViewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setImageViewerVisible(false)}
+      >
+        <View style={styles.imageViewerBackdrop}>
+          <View style={[styles.imageViewerHeader, { paddingTop: Math.max(insets.top, 10) }]}>
+            <IconButton icon="close" iconColor="#fff" size={28} onPress={() => setImageViewerVisible(false)} />
+            <IconButton
+              icon="dots-vertical"
+              iconColor="#fff"
+              size={28}
+              onPress={onOpenImageActions}
+              disabled={downloadingImage}
+            />
+          </View>
+          {post.image ? <Image source={{ uri: post.image }} style={styles.fullImage} resizeMode="contain" /> : null}
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -213,4 +289,7 @@ const styles = StyleSheet.create({
   commentInputContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, paddingTop: 6, paddingBottom: 6, borderTopWidth: 1, borderColor: '#ccc', backgroundColor: '#fff' },
   input: { flex: 1, minHeight: 42, borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff' },
   commentCard: { marginVertical: 5 },
+  imageViewerBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)' },
+  imageViewerHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingBottom: 6 },
+  fullImage: { flex: 1, width: '100%' },
 });
