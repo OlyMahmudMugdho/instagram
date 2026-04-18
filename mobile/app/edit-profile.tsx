@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, SafeAreaView, Alert, Image } from 'react-native';
-import { TextInput, Button, ActivityIndicator, Title, Avatar } from 'react-native-paper';
+import { TextInput, Button, Title, Avatar } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../src/lib/auth-context';
 import { useRouter } from 'expo-router';
 import { usersService } from '../src/services/users';
+import eventBus from '../src/lib/eventBus';
 
 export default function EditProfile() {
   const { user: authUser } = useAuth();
@@ -66,6 +67,7 @@ export default function EditProfile() {
 
       const res = await usersService.updateProfile({ name, email });
       if (res.success) {
+        eventBus.emit('profile:update', { userId: authUser?._id });
         Alert.alert('Success', 'Profile updated');
         router.back();
       } else {
@@ -79,9 +81,18 @@ export default function EditProfile() {
   };
 
   if (loading) return (
-    <View style={styles.center}>
-      <ActivityIndicator animating size="large" />
-    </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.form}>
+        <View style={styles.titleSkeleton} />
+        <View style={styles.avatarSkeletonWrap}>
+          <View style={styles.avatarSkeleton} />
+          <View style={styles.buttonSkeleton} />
+        </View>
+        <View style={styles.inputSkeleton} />
+        <View style={styles.inputSkeleton} />
+        <View style={styles.saveSkeleton} />
+      </View>
+    </SafeAreaView>
   );
 
   return (
@@ -124,9 +135,14 @@ export default function EditProfile() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 32 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   form: { width: '100%', maxWidth: 640, paddingHorizontal: 20, paddingBottom: 20 },
   input: { marginBottom: 12 },
   saveBtn: { marginTop: 8 },
   title: { marginBottom: 20 },
+  titleSkeleton: { width: 140, height: 24, borderRadius: 6, backgroundColor: '#e5e7eb', marginBottom: 20 },
+  avatarSkeletonWrap: { alignItems: 'center', marginBottom: 16 },
+  avatarSkeleton: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#e5e7eb' },
+  buttonSkeleton: { width: 130, height: 36, borderRadius: 8, backgroundColor: '#e5e7eb', marginTop: 8 },
+  inputSkeleton: { height: 56, borderRadius: 10, backgroundColor: '#e5e7eb', marginBottom: 12 },
+  saveSkeleton: { height: 44, borderRadius: 10, backgroundColor: '#e5e7eb', marginTop: 8 },
 });

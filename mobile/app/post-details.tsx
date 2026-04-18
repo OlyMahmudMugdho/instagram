@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
+import * as Network from 'expo-network';
 import { interactionService } from '../src/services/interactions';
 import { postsService } from '../src/services/posts';
 import { useAuth } from '../src/lib/auth-context';
@@ -12,23 +13,28 @@ import { useAuth } from '../src/lib/auth-context';
 interface PostComment {
   _id: string;
   commentID: string;
+  userID?: string;
   username: string;
   text: string;
+  profilePicture?: string | null;
   createdAt?: string;
 }
 
 export default function PostDetails() {
   const { post: postParam } = useLocalSearchParams();
-  const post = JSON.parse(postParam as string);
+  const initialPost = JSON.parse(postParam as string);
+  const [post, setPost] = useState<any>(initialPost);
   const router = useRouter();
   const { user } = useAuth();
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<PostComment[]>([]);
-  const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState<number>(Number(post.likes) || 0);
+  const [liked, setLiked] = useState(!!initialPost.isLiked);
+  const [likesCount, setLikesCount] = useState<number>(Number(initialPost.likes) || 0);
   const [menuVisible, setMenuVisible] = useState(false);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [downloadingImage, setDownloadingImage] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentsNetworkIssue, setCommentsNetworkIssue] = useState(false);
   const isOwner = user?._id === post.userId;
   const insets = useSafeAreaInsets();
 
@@ -42,57 +48,125 @@ export default function PostDetails() {
       }
     });
 
-    return () => { unsub(); };
+    const netSub = Network.addNetworkStateListener((state) => {
+      const connected = !!state.isConnected && !!state.isInternetReachable;
+      if (connected) {
+        loadComments();
+      }
+    });
+
+    return () => {
+      netSub.remove();
+      unsub();
+    };
   }, []);
 
+  const loadComments = async () => {
+    setCommentsLoading(true);
+    const networkState = await Network.getNetworkStateAsync();
+    const connected = !!networkState.isConnected && !!networkState.isInternetReachable;
+    if (!connected) {
+      setComments([]);
+      setCommentsNetworkIssue(true);
+      setCommentsLoading(false);
+      return;
+    }
+
+    const commentsRes = await interactionService.getComments(post.userId, post.postId);
+    if (commentsRes.success) {
+      setComments(commentsRes.data || []);
+      setCommentsNetworkIssue(false);
+    } else {
+      setComments([]);
+      setCommentsNetworkIssue(!!commentsRes.networkIssue);
+    }
+    setCommentsLoading(false);
+  };
+
   const loadStatus = async () => {
-    const [isLiked, fetchedComments] = await Promise.all([
-      interactionService.isLiked(post.userId, post.postId),
-      interactionService.getComments(post.userId, post.postId)
-    ]);
+    if (post?._id) {
+      const postRes = await postsService.getPostById(post._id);
+      if (postRes.success && postRes.post) {
+        setPost(postRes.post);
+        setLikesCount(Number(postRes.post.likes) || 0);
+        setLiked(!!postRes.post.isLiked);
+      }
+    }
+    const isLiked = await interactionService.isLiked(post.userId, post.postId);
     setLiked(isLiked);
-    setComments(fetchedComments);
+    await loadComments();
   };
 
   const handleLike = async () => {
     const newLiked = !liked;
+    const newLikes = newLiked ? likesCount + 1 : Math.max(0, likesCount - 1);
     setLiked(newLiked);
-    setLikesCount(prev => newLiked ? prev + 1 : Math.max(0, prev - 1));
+    setLikesCount(newLikes);
 
     const ok = newLiked ? await interactionService.likePost(post.userId, post.postId) : await interactionService.unlikePost(post.userId, post.postId);
     if (!ok) {
       // rollback
       setLiked(!newLiked);
-      setLikesCount(prev => newLiked ? Math.max(0, prev - 1) : prev + 1);
+      setLikesCount(likesCount);
     } else {
       // notify feed
       const eventBus = require('../src/lib/eventBus').default;
-      eventBus.emit('post:update', { postId: post.postId, likes: newLiked ? likesCount + 1 : Math.max(0, likesCount - 1), isLiked: newLiked });
+      eventBus.emit('post:update', { postId: post.postId, likes: newLikes, isLiked: newLiked });
     }
   };
 
   const handleComment = async () => {
     if (!comment.trim()) return;
+    const text = comment.trim();
     const success = await interactionService.addComment(post.userId, post.postId, comment);
     if (success) {
       setComment('');
       Keyboard.dismiss();
-      loadStatus();
+      const optimisticComment: PostComment = {
+        _id: `local-${Date.now()}`,
+        commentID: `local-${Date.now()}`,
+        userID: user?._id,
+        username: user?.username || 'You',
+        profilePicture: user?.profilePicture || null,
+        text,
+        createdAt: new Date().toISOString(),
+      };
+      setComments(prev => [optimisticComment, ...prev]);
+      setCommentsNetworkIssue(false);
+      setCommentsLoading(false);
     } else {
       Alert.alert('Error', 'Unable to post comment');
     }
   };
 
-  const formatTime = (iso?: string) => {
-    if (!iso) return '';
+  const objectIdToMs = (id?: string) => {
+    if (!id || !/^[a-fA-F0-9]{24}$/.test(id)) return null;
+    const seconds = parseInt(id.slice(0, 8), 16);
+    if (!Number.isFinite(seconds)) return null;
+    return seconds * 1000;
+  };
+
+  const pickBestTimestamp = (iso?: string, objectId?: string) => {
+    const isoMs = iso ? new Date(iso).getTime() : NaN;
+    const idMs = objectIdToMs(objectId);
+    const validIso = Number.isFinite(isoMs);
+    if (!validIso && idMs) return idMs;
+    if (!validIso) return null;
+    if (!idMs) return isoMs;
+    if (Math.abs(isoMs - idMs) > 2 * 60 * 1000) return idMs;
+    return isoMs;
+  };
+
+  const formatTime = (iso?: string, objectId?: string) => {
     try {
-      const d = new Date(iso);
-      const now = Date.now();
-      const diff = Math.floor((now - d.getTime()) / 1000);
+      const ts = pickBestTimestamp(iso, objectId);
+      if (!Number.isFinite(ts)) return '';
+      const diff = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+      if (diff < 5) return 'now';
       if (diff < 60) return `${diff}s`;
       if (diff < 3600) return `${Math.floor(diff/60)}m`;
       if (diff < 86400) return `${Math.floor(diff/3600)}h`;
-      return d.toLocaleDateString();
+      return new Date(ts).toLocaleDateString();
     } catch {
       return '';
     }
@@ -174,6 +248,15 @@ export default function PostDetails() {
     ]);
   };
 
+  const openUserProfile = (targetUserId?: string) => {
+    if (!targetUserId) return;
+    if (targetUserId === user?._id) {
+      router.push('/(tabs)/profile');
+    } else {
+      router.push(`/user/${targetUserId}`);
+    }
+  };
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0} style={styles.flex}>
       <ScrollView
@@ -182,13 +265,16 @@ export default function PostDetails() {
         keyboardDismissMode="on-drag"
       >
         <Card>
-          <Card.Title 
-            title={post.username || 'Unknown'}
-            subtitle={formatTime(post?.createdAt || post?.date || post?.updatedAt)}
+            <Card.Title 
+              title={post.username || 'Unknown'}
+              subtitle={formatTime(post?.createdAt || post?.date || post?.updatedAt, post?._id)}
             left={(props) => (
-              post.avatar || post.profilePicture ? 
-                <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
-                <Avatar.Text {...props} label={(post.username || 'U')[0]} />
+              <Pressable onPress={() => openUserProfile(post.userId)}>
+                {post.avatar || post.profilePicture ? 
+                  <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
+                  <Avatar.Text {...props} label={(post.username || 'U')[0]} />
+                }
+              </Pressable>
             )}
             right={(props) => (
               isOwner ? (
@@ -224,16 +310,36 @@ export default function PostDetails() {
         </Card>
         
         <List.Section title="Comments">
-          {comments.map((c, index: number) => (
+          {commentsLoading ? (
+            <>
+              <View style={styles.commentSkeleton} />
+              <View style={styles.commentSkeleton} />
+              <View style={styles.commentSkeleton} />
+            </>
+          ) : commentsNetworkIssue ? (
+            <Card style={styles.commentCard}>
+              <Card.Content>
+                <Text style={styles.networkIssueText}>Network issue. Please check your internet connection.</Text>
+              </Card.Content>
+            </Card>
+          ) : comments.length === 0 ? (
+            <Card style={styles.commentCard}>
+              <Card.Content>
+                <Text>No comments yet</Text>
+              </Card.Content>
+            </Card>
+          ) : comments.map((c, index: number) => (
             <Card key={index} style={styles.commentCard}>
               <Card.Title 
                 title={c.username || 'Unknown'} 
                 subtitle={c.text}
                 left={(props) => (
-                  c.profilePicture ? <Avatar.Image {...props} source={{ uri: c.profilePicture }} /> : <Avatar.Text {...props} label={(c.username || 'U').slice(0,1).toUpperCase()} />
+                  <Pressable onPress={() => openUserProfile(c.userID)}>
+                    {c.profilePicture ? <Avatar.Image {...props} source={{ uri: c.profilePicture }} /> : <Avatar.Text {...props} label={(c.username || 'U').slice(0,1).toUpperCase()} />}
+                  </Pressable>
                 )}
                 right={(props) => (
-                  <Text {...props} variant="bodySmall">{formatTime(c.createdAt)}</Text>
+                  <Text {...props} variant="bodySmall">{formatTime(c.createdAt, c._id)}</Text>
                 )}
               />
             </Card>
@@ -289,6 +395,8 @@ const styles = StyleSheet.create({
   commentInputContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, paddingTop: 6, paddingBottom: 6, borderTopWidth: 1, borderColor: '#ccc', backgroundColor: '#fff' },
   input: { flex: 1, minHeight: 42, borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff' },
   commentCard: { marginVertical: 5 },
+  commentSkeleton: { height: 72, borderRadius: 12, backgroundColor: '#e5e7eb', marginVertical: 5 },
+  networkIssueText: { color: '#b45309' },
   imageViewerBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)' },
   imageViewerHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingBottom: 6 },
   fullImage: { flex: 1, width: '100%' },

@@ -7,7 +7,6 @@ export const interactionService = {
   likePost: async (userID: string, postId: string) => {
     try {
       const tokenRes = await authService.getAccessToken();
-      console.log(`Liking post: ${userID}/${postId}`);
       const res = await fetch(`${API_BASE_URL}/api/like/${userID}/${postId}`, {
         method: 'GET',
         headers: {
@@ -15,11 +14,8 @@ export const interactionService = {
           ...(tokenRes?.accessToken ? { Authorization: `Bearer ${tokenRes.accessToken}` } : {}),
         },
       });
-      const body = await res.json().catch(() => ({}));
-      console.log('Like result:', res.status, body);
       return res.ok;
-    } catch (e) {
-      console.error('Like error:', e);
+    } catch {
       return false;
     }
   },
@@ -44,11 +40,8 @@ export const interactionService = {
         method: 'GET',
         headers: { ...(tokenRes?.accessToken ? { Authorization: `Bearer ${tokenRes.accessToken}` } : {}) },
       });
-      const body = await res.json().catch(() => ({}));
-      console.log('Unlike result:', res.status, body);
       return res.ok;
-    } catch (e) {
-      console.error('unlike error', e);
+    } catch {
       return false;
     }
   },
@@ -64,11 +57,8 @@ export const interactionService = {
         },
         body: JSON.stringify({ comment }),
       });
-      const body = await res.json().catch(() => ({}));
-      console.log('Add comment result:', res.status, body);
       return res.ok;
-    } catch (e) {
-      console.error('addComment error', e);
+    } catch {
       return false;
     }
   },
@@ -83,8 +73,11 @@ export const interactionService = {
       const res = await fetch(`${API_BASE_URL}/api/comment/${userID}/${postId}`, {
         headers,
       });
+      if (!res.ok) {
+        return { success: false, data: [], networkIssue: true };
+      }
       const body = await res.json().catch(() => ({}));
-      if (!Array.isArray(body.data)) return [];
+      if (!Array.isArray(body.data)) return { success: true, data: [] };
 
       const comments = body.data.map((comment: any) => {
         let pp = comment.profilePicture || null;
@@ -96,6 +89,7 @@ export const interactionService = {
           _id: comment._id,
           commentID: comment.commentID,
           username: comment.username || 'Unknown',
+          userID: comment.userID || null,
           profilePicture: pp,
           text: comment.text || comment.comment || '',
           createdAt: comment.createdAt || comment.date,
@@ -104,28 +98,28 @@ export const interactionService = {
 
       // Try to resolve missing profile pictures by searching user and fetching profile
       await Promise.all(comments.map(async (c: any) => {
-        if (c.profilePicture) return;
         if (!c.username) return;
         try {
           const searchRes = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(c.username)}`, { headers });
           const searchBody = await searchRes.json().catch(() => ({}));
           const userID = searchBody?.result?.userIDs?.[0] || null;
           if (!userID) return;
+          c.userID = c.userID || userID;
+          if (c.profilePicture) return;
           const profile = await usersService.getProfile(userID);
           const foundUser = profile?.message?.foundUser;
           const pic = foundUser?.profilePicture || null;
           if (pic && typeof pic === 'string') {
             c.profilePicture = pic.startsWith('http') ? pic : API_BASE_URL.replace(/\/$/, '') + (pic.startsWith('/') ? '' : '/') + pic;
           }
-        } catch (e) {
+        } catch {
           // ignore
         }
       }));
 
-      return comments;
-    } catch (e) {
-      console.error('getComments error', e);
-      return [];
+      return { success: true, data: comments };
+    } catch {
+      return { success: false, data: [], networkIssue: true };
     }
   },
 };

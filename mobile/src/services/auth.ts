@@ -30,11 +30,34 @@ async function save(key: string, value: string) {
   }
 }
 
+async function get(key: string) {
+  try {
+    return await storage.getItem(key);
+  } catch (e) {
+    console.warn('Storage get error', e);
+    return null;
+  }
+}
+
 async function remove(key: string) {
   try {
     await storage.deleteItem(key);
   } catch (e) {
     console.warn('Storage delete error', e);
+  }
+}
+
+async function saveJSON(key: string, value: any) {
+  await save(key, JSON.stringify(value));
+}
+
+async function getJSON<T = any>(key: string): Promise<T | null> {
+  const raw = await get(key);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
   }
 }
 
@@ -58,6 +81,7 @@ export const authService = {
 
       if (body.accessToken) await save('accessToken', body.accessToken);
       if (body.refreshToken) await save('refreshToken', body.refreshToken);
+      if (body.user) await saveJSON('authUser', body.user);
 
       return { success: true, message: body.message || 'Logged in', user: body.user, accessToken: body.accessToken, refreshToken: body.refreshToken };
     } catch (err) {
@@ -83,6 +107,7 @@ export const authService = {
 
       if (body.accessToken) await save('accessToken', body.accessToken);
       if (body.refreshToken) await save('refreshToken', body.refreshToken);
+      if (body.user) await saveJSON('authUser', body.user);
 
       return { success: true, message: body.message || 'Registered', user: body.user, accessToken: body.accessToken, refreshToken: body.refreshToken };
     } catch (err) {
@@ -129,9 +154,16 @@ export const authService = {
       });
 
       const body = await res.json().catch(() => ({}));
-      if (res.ok && body.user) return body;
+      if (res.ok && body.user) {
+        await saveJSON('authUser', body.user);
+        return body;
+      }
       return { success: false, message: body.message || 'Not authenticated' };
     } catch (err) {
+      const cachedUser = await getJSON('authUser');
+      if (cachedUser) {
+        return { success: true, user: cachedUser, message: 'Using offline session' };
+      }
       throw err;
     }
   },
@@ -139,6 +171,7 @@ export const authService = {
   logout: async (): Promise<AuthResponse> => {
     await remove('accessToken');
     await remove('refreshToken');
+    await remove('authUser');
     try {
       const res = await fetch(`${API_BASE_URL}/api/logout`, {
         method: 'GET',

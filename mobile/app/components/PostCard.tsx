@@ -19,31 +19,63 @@ export default function PostCard({ post }: PostCardProps) {
   const [menuVisible, setMenuVisible] = React.useState(false);
   const isOwner = user?._id === post.userId;
   const suppressNavRef = useRef(false);
+  const likeProbeIdRef = useRef(0);
   const postTimestamp = post?.createdAt || post?.date || post?.updatedAt;
 
-  const formatTime = (iso?: string) => {
-    if (!iso) return '';
+  const objectIdToMs = (id?: string) => {
+    if (!id || !/^[a-fA-F0-9]{24}$/.test(id)) return null;
+    const seconds = parseInt(id.slice(0, 8), 16);
+    if (!Number.isFinite(seconds)) return null;
+    return seconds * 1000;
+  };
+
+  const pickBestTimestamp = (iso?: string, objectId?: string) => {
+    const isoMs = iso ? new Date(iso).getTime() : NaN;
+    const idMs = objectIdToMs(objectId);
+    const validIso = Number.isFinite(isoMs);
+    if (!validIso && idMs) return idMs;
+    if (!validIso) return null;
+    if (!idMs) return isoMs;
+    // Backend may return stale date defaults; prefer ObjectId time when they diverge.
+    if (Math.abs(isoMs - idMs) > 2 * 60 * 1000) return idMs;
+    return isoMs;
+  };
+
+  const formatTime = (iso?: string, objectId?: string) => {
     try {
-      const d = new Date(iso);
-      const now = Date.now();
-      const diff = Math.floor((now - d.getTime()) / 1000);
+      const ts = pickBestTimestamp(iso, objectId);
+      if (!Number.isFinite(ts)) return '';
+      const diff = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+      if (diff < 5) return 'now';
       if (diff < 60) return `${diff}s`;
       if (diff < 3600) return `${Math.floor(diff / 60)}m`;
       if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-      return d.toLocaleDateString();
+      return new Date(ts).toLocaleDateString();
     } catch {
       return '';
     }
   };
 
-  // Initialize liked status
+  // Keep local state in sync when upstream post values change.
   React.useEffect(() => {
+    if (typeof post.isLiked === 'boolean') {
+      setLiked(post.isLiked);
+    }
+    setLikesCount(Number(post.likes) || 0);
+  }, [post.isLiked, post.likes]);
+
+  // Initialize liked status only when feed payload doesn't include it.
+  React.useEffect(() => {
+    if (typeof post.isLiked === 'boolean') return;
+    likeProbeIdRef.current += 1;
+    const probeId = likeProbeIdRef.current;
     const checkStatus = async () => {
       const status = await interactionService.isLiked(post.userId, post.postId);
+      if (probeId !== likeProbeIdRef.current) return;
       setLiked(status);
     };
     checkStatus();
-  }, [post.userId, post.postId]);
+  }, [post.userId, post.postId, post.isLiked]);
 
   const handleLike = async () => {
     suppressNavRef.current = true;
@@ -53,6 +85,7 @@ export default function PostCard({ post }: PostCardProps) {
     const newLikes = newLiked ? likesCount + 1 : Math.max(0, likesCount - 1);
     setLikesCount(newLikes);
 
+    likeProbeIdRef.current += 1;
     let ok = false;
     try {
       if (newLiked) {
@@ -82,6 +115,16 @@ export default function PostCard({ post }: PostCardProps) {
       pathname: '/post-details',
       params: { post: JSON.stringify({ ...post, isLiked: liked, likes: likesCount }) }
     });
+  };
+
+  const openAuthorProfile = () => {
+    const authorId = post.userId;
+    if (!authorId) return;
+    if (authorId === user?._id) {
+      router.push('/(tabs)/profile');
+    } else {
+      router.push(`/user/${authorId}`);
+    }
   };
 
   const onEdit = () => {
@@ -121,11 +164,14 @@ export default function PostCard({ post }: PostCardProps) {
       <Card style={styles.card} elevation={1}>
         <Card.Title
           title={post.username || 'Unknown'}
-          subtitle={formatTime(postTimestamp)}
+          subtitle={formatTime(postTimestamp, post?._id)}
           left={(props) => (
-            post.avatar || post.profilePicture ? 
-              <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
-              <Avatar.Text {...props} label={(post.username || 'U').slice(0, 1).toUpperCase()} />
+            <Pressable onPress={(e) => { e.stopPropagation(); openAuthorProfile(); }}>
+              {post.avatar || post.profilePicture ? 
+                <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
+                <Avatar.Text {...props} label={(post.username || 'U').slice(0, 1).toUpperCase()} />
+              }
+            </Pressable>
           )}
           right={(props) => (
             isOwner ? (

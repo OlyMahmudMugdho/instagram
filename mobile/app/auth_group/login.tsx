@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Alert, Image } from 'react-native';
 import { TextInput, Button, Title, Paragraph, Snackbar, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/lib/auth-context';
+import { storage } from '../../src/lib/storage';
 
 
 
@@ -16,6 +17,17 @@ export default function Login() {
   const { login } = useAuth();
   const theme = useTheme();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const cachedUsername = await storage.getItem('lastUsername');
+      if (mounted && cachedUsername) {
+        setUsername(cachedUsername);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const onLogin = async () => {
     if (!username || !password) {
@@ -31,6 +43,7 @@ export default function Login() {
         setErrorMessage(msg);
         return;
       }
+      await storage.setItem('lastUsername', username);
       setErrorMessage(null);
       router.replace('/');
     } catch (err) {
