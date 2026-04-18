@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, FlatList, RefreshControl, StyleSheet, SafeAreaView } from 'react-native';
-import { ActivityIndicator, Title } from 'react-native-paper';
+import { Title } from 'react-native-paper';
 import PostCard from './components/PostCard';
 import { postsService } from '../src/services/posts';
 import eventBus from '../src/lib/eventBus';
@@ -49,21 +49,15 @@ export default function Feed() {
     // No-op for non-paginated feed
   };
 
-  if (loading && posts.length === 0) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator animating size="large" />
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <Title style={styles.title}>Feed</Title>
       <FlatList
-        data={posts}
-        keyExtractor={(item) => item.postId || item._id || String(item.date)}
-        renderItem={({ item }) => <PostCard post={item} />}
+        data={loading && posts.length === 0 ? SKELETON_POSTS : posts}
+        keyExtractor={(item: any) => item.postId || item._id || item.id || String(item.date)}
+        renderItem={({ item }: any) => (
+          item.__skeleton ? <View style={styles.skeletonCard} /> : <PostCard post={item} />
+        )}
         contentContainerStyle={styles.listContent}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
@@ -74,9 +68,12 @@ export default function Feed() {
   );
 }
 
+const SKELETON_POSTS = Array.from({ length: 5 }, (_, idx) => ({ id: `feed-skeleton-${idx}`, __skeleton: true }));
+
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 32 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   title: { paddingHorizontal: 12, marginBottom: 14 },
   listContent: { paddingTop: 2, paddingBottom: 10 },
+  skeletonCard: { marginHorizontal: 12, marginVertical: 8, height: 360, borderRadius: 12, backgroundColor: '#e5e7eb' },
 });
