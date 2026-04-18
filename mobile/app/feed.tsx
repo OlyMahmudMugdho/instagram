@@ -56,7 +56,7 @@ export default function Feed() {
         data={loading && posts.length === 0 ? SKELETON_POSTS : posts}
         keyExtractor={(item: any) => item.postId || item._id || item.id || String(item.date)}
         renderItem={({ item }: any) => (
-          item.__skeleton ? <View style={styles.skeletonCard} /> : <PostCard post={item} />
+          item.__skeleton ? <FeedPostSkeleton /> : <PostCard post={item} />
         )}
         contentContainerStyle={styles.listContent}
         onEndReached={onEndReached}
@@ -70,10 +70,47 @@ export default function Feed() {
 
 const SKELETON_POSTS = Array.from({ length: 5 }, (_, idx) => ({ id: `feed-skeleton-${idx}`, __skeleton: true }));
 
+function FeedPostSkeleton() {
+  return (
+    <View style={styles.skeletonCard}>
+      <View style={styles.skeletonHeader}>
+        <View style={styles.skeletonAvatar} />
+        <View style={styles.skeletonHeaderTextWrap}>
+          <View style={styles.skeletonName} />
+          <View style={styles.skeletonTime} />
+        </View>
+      </View>
+      <View style={styles.skeletonCaption} />
+      <View style={styles.skeletonImage} />
+      <View style={styles.skeletonActions}>
+        <View style={styles.skeletonActionLeft}>
+          <View style={styles.skeletonIcon} />
+          <View style={styles.skeletonCount} />
+        </View>
+        <View style={styles.skeletonActionLeft}>
+          <View style={styles.skeletonIcon} />
+          <View style={styles.skeletonCount} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 32 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   title: { paddingHorizontal: 12, marginBottom: 14 },
   listContent: { paddingTop: 2, paddingBottom: 10 },
-  skeletonCard: { marginHorizontal: 12, marginVertical: 8, height: 360, borderRadius: 12, backgroundColor: '#e5e7eb' },
+  skeletonCard: { marginHorizontal: 12, marginVertical: 8, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden' },
+  skeletonHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingTop: 12, paddingBottom: 10 },
+  skeletonAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#e5e7eb' },
+  skeletonHeaderTextWrap: { marginLeft: 10, flex: 1 },
+  skeletonName: { width: 120, height: 14, borderRadius: 4, backgroundColor: '#e5e7eb', marginBottom: 6 },
+  skeletonTime: { width: 70, height: 12, borderRadius: 4, backgroundColor: '#e5e7eb' },
+  skeletonCaption: { marginHorizontal: 12, marginBottom: 10, height: 14, borderRadius: 4, backgroundColor: '#e5e7eb' },
+  skeletonImage: { width: '100%', height: 240, backgroundColor: '#e5e7eb' },
+  skeletonActions: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 8, paddingVertical: 8 },
+  skeletonActionLeft: { flexDirection: 'row', alignItems: 'center' },
+  skeletonIcon: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#e5e7eb' },
+  skeletonCount: { width: 18, height: 12, borderRadius: 4, backgroundColor: '#e5e7eb', marginLeft: 6 },
 });
