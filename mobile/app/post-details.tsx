@@ -122,7 +122,7 @@ export default function PostDetails() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0} style={styles.flex}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0} style={styles.flex}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
@@ -202,13 +202,13 @@ export default function PostDetails() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
+  flex: { flex: 1, backgroundColor: '#fff' },
   scrollContainer: { padding: 10, paddingTop: 40 },
   content: { paddingTop: 8, paddingBottom: 16 },
   actions: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   leftAction: { flexDirection: 'row', alignItems: 'center' },
   rightAction: { flexDirection: 'row', alignItems: 'center' },
-  commentInputContainer: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderTopWidth: 1, borderColor: '#ccc', backgroundColor: '#fff' },
-  input: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#fff' },
+  commentInputContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, paddingTop: 6, paddingBottom: 6, borderTopWidth: 1, borderColor: '#ccc', backgroundColor: '#fff' },
+  input: { flex: 1, minHeight: 42, borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff' },
   commentCard: { marginVertical: 5 },
 });
