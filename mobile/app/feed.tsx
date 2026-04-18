@@ -7,7 +7,7 @@ import eventBus from '../src/lib/eventBus';
 
 export default function Feed() {
   const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadPage = useCallback(async (replace = false) => {

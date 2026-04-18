@@ -1,5 +1,5 @@
 import { Stack, useSegments, useRouter } from 'expo-router';
-import { Provider as PaperProvider, MD3LightTheme, ActivityIndicator } from 'react-native-paper';
+import { Provider as PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { AuthProvider, useAuth } from '../src/lib/auth-context';
 import { View, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
@@ -49,11 +49,7 @@ function AppContent() {
   }, [user, loading, segments]);
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator animating size="large" />
-      </View>
-    );
+    return <StartupSkeleton />;
   }
 
   return (
@@ -66,4 +62,36 @@ function AppContent() {
   );
 }
 
-const styles = StyleSheet.create({ center: { flex: 1, justifyContent: 'center', alignItems: 'center' } });
+function StartupSkeleton() {
+  return (
+    <View style={styles.skeletonRoot}>
+      <View style={styles.skeletonHeader} />
+      <View style={styles.skeletonCard} />
+      <View style={styles.skeletonCard} />
+      <View style={styles.skeletonCard} />
+      <View style={styles.skeletonTabBar}>
+        <View style={styles.skeletonTabDot} />
+        <View style={styles.skeletonTabDot} />
+        <View style={styles.skeletonTabDot} />
+        <View style={styles.skeletonTabDot} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  skeletonRoot: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
+  skeletonHeader: { height: 28, borderRadius: 8, backgroundColor: '#e5e7eb', marginHorizontal: 16, marginBottom: 18 },
+  skeletonCard: { height: 150, borderRadius: 12, backgroundColor: '#e5e7eb', marginHorizontal: 12, marginBottom: 12 },
+  skeletonTabBar: {
+    marginTop: 'auto',
+    height: 64,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  skeletonTabDot: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#e5e7eb' },
+});
