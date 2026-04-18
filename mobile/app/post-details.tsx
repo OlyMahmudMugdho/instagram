@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
 import { Card, Text, IconButton, Avatar, Button, List, Menu } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { interactionService } from '../src/services/interactions';
@@ -70,6 +70,7 @@ export default function PostDetails() {
     const success = await interactionService.addComment(post.userId, post.postId, comment);
     if (success) {
       setComment('');
+      Keyboard.dismiss();
       loadStatus();
     } else {
       Alert.alert('Error', 'Unable to post comment');
@@ -121,15 +122,20 @@ export default function PostDetails() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 80} style={styles.flex}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0} style={styles.flex}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         <Card>
           <Card.Title 
-            title={post.username} 
+            title={post.username || 'Unknown'}
+            subtitle={formatTime(post?.createdAt || post?.date || post?.updatedAt)}
             left={(props) => (
               post.avatar || post.profilePicture ? 
                 <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
-                <Avatar.Text {...props} label={post.username[0]} />
+                <Avatar.Text {...props} label={(post.username || 'U')[0]} />
             )}
             right={(props) => (
               isOwner ? (
@@ -181,12 +187,15 @@ export default function PostDetails() {
       
       <View style={styles.commentInputContainer}>
         <TextInput 
-          placeholder="Add a comment..." 
+          placeholder="Write a comment..."
+          placeholderTextColor="#7a7a7a"
           style={styles.input} 
           value={comment} 
-          onChangeText={setComment} 
+          onChangeText={setComment}
+          returnKeyType="done"
+          onSubmitEditing={Keyboard.dismiss}
         />
-        <Button onPress={handleComment}>Post</Button>
+        <Button mode="outlined" onPress={handleComment}>Post</Button>
       </View>
     </KeyboardAvoidingView>
   );
@@ -195,11 +204,11 @@ export default function PostDetails() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   scrollContainer: { padding: 10, paddingTop: 40 },
-  content: { paddingVertical: 15 },
+  content: { paddingTop: 8, paddingBottom: 16 },
   actions: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   leftAction: { flexDirection: 'row', alignItems: 'center' },
   rightAction: { flexDirection: 'row', alignItems: 'center' },
-  commentInputContainer: { flexDirection: 'row', alignItems: 'center', padding: 10, borderTopWidth: 1, borderColor: '#ccc', backgroundColor: '#fff', paddingBottom: 60 },
-  input: { flex: 1 },
+  commentInputContainer: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderTopWidth: 1, borderColor: '#ccc', backgroundColor: '#fff' },
+  input: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#fff' },
   commentCard: { marginVertical: 5 },
 });

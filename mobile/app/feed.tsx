@@ -64,6 +64,7 @@ export default function Feed() {
         data={posts}
         keyExtractor={(item) => item.postId || item._id || String(item.date)}
         renderItem={({ item }) => <PostCard post={item} />}
+        contentContainerStyle={styles.listContent}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -76,5 +77,6 @@ export default function Feed() {
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 20 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { paddingHorizontal: 12, marginBottom: 6 },
+  title: { paddingHorizontal: 12, marginBottom: 14 },
+  listContent: { paddingTop: 2, paddingBottom: 10 },
 });

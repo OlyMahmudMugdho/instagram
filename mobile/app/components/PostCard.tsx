@@ -19,6 +19,22 @@ export default function PostCard({ post }: PostCardProps) {
   const [menuVisible, setMenuVisible] = React.useState(false);
   const isOwner = user?._id === post.userId;
   const suppressNavRef = useRef(false);
+  const postTimestamp = post?.createdAt || post?.date || post?.updatedAt;
+
+  const formatTime = (iso?: string) => {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      const now = Date.now();
+      const diff = Math.floor((now - d.getTime()) / 1000);
+      if (diff < 60) return `${diff}s`;
+      if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+      return d.toLocaleDateString();
+    } catch {
+      return '';
+    }
+  };
 
   // Initialize liked status
   React.useEffect(() => {
@@ -104,7 +120,8 @@ export default function PostCard({ post }: PostCardProps) {
     >
       <Card style={styles.card} elevation={1}>
         <Card.Title
-          title={<Text>{post.username || 'Unknown'}</Text>}
+          title={post.username || 'Unknown'}
+          subtitle={formatTime(postTimestamp)}
           left={(props) => (
             post.avatar || post.profilePicture ? 
               <Avatar.Image {...props} source={{ uri: post.avatar || post.profilePicture }} /> :
@@ -160,7 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  content: { marginTop: 8 },
+  content: { paddingTop: 4, paddingBottom: 14 },
   actions: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   leftAction: { flexDirection: 'row', alignItems: 'center' },
   rightAction: { flexDirection: 'row', alignItems: 'center' },
