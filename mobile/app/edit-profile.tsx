@@ -123,10 +123,10 @@ export default function EditProfile() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, paddingTop: 32 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  form: { padding: 20 },
+  form: { width: '100%', maxWidth: 640, paddingHorizontal: 20, paddingBottom: 20 },
   input: { marginBottom: 12 },
   saveBtn: { marginTop: 8 },
-  title: { marginBottom: 12 },
+  title: { marginBottom: 20 },
 });

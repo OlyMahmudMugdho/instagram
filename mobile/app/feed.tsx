@@ -75,7 +75,7 @@ export default function Feed() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 20 },
+  container: { flex: 1, paddingTop: 32 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   title: { paddingHorizontal: 12, marginBottom: 14 },
   listContent: { paddingTop: 2, paddingBottom: 10 },

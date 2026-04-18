@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
 import { Card, Text, IconButton, Avatar, Button, List, Menu } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { interactionService } from '../src/services/interactions';
 import { postsService } from '../src/services/posts';
 import { useAuth } from '../src/lib/auth-context';
@@ -25,6 +26,7 @@ export default function PostDetails() {
   const [likesCount, setLikesCount] = useState<number>(Number(post.likes) || 0);
   const [menuVisible, setMenuVisible] = useState(false);
   const isOwner = user?._id === post.userId;
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadStatus();
@@ -185,7 +187,7 @@ export default function PostDetails() {
         <View style={{ height: 100 }} />
       </ScrollView>
       
-      <View style={styles.commentInputContainer}>
+      <View style={[styles.commentInputContainer, { paddingBottom: Math.max(insets.bottom, 6) }]}>
         <TextInput 
           placeholder="Write a comment..."
           placeholderTextColor="#7a7a7a"

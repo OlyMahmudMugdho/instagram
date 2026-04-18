@@ -91,9 +91,9 @@ export default function Create() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, alignItems: 'center', justifyContent: 'center' },
+  container: { paddingHorizontal: 20, paddingBottom: 20, paddingTop: 32, alignItems: 'center' },
   card: { width: '100%', maxWidth: 640 },
-  title: { marginBottom: 12 },
+  title: { marginBottom: 20 },
   imageContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
   thumbContainer: { marginRight: 8, marginBottom: 8 },
   thumb: { width: 100, height: 100, borderRadius: 6 },
