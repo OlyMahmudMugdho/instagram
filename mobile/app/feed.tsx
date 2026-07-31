@@ -1,0 +1,116 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, FlatList, RefreshControl, StyleSheet, SafeAreaView } from 'react-native';
+import { Title } from 'react-native-paper';
+import PostCard from './components/PostCard';
+import { postsService } from '../src/services/posts';
+import eventBus from '../src/lib/eventBus';
+
+export default function Feed() {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadPage = useCallback(async (replace = false) => {
+    // Feed API is not paginated in the current backend implementation
+    if (!replace) return;
+    
+    setLoading(true);
+    try {
+      const res = await postsService.getFeed();
+      if (res && res.success && Array.isArray(res.posts)) {
+        setPosts(res.posts);
+      } else {
+        setPosts([]);
+      }
+    } catch (err) {
+      setPosts([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPage(true);
+
+    const unsub = eventBus.on('post:update', (payload: any) => {
+      setPosts(prev => prev.map(p => p.postId === payload.postId ? { ...p, likes: payload.likes, isLiked: payload.isLiked } : p));
+    });
+
+    return () => { unsub(); };
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadPage(true);
+  };
+
+  const onEndReached = async () => {
+    // No-op for non-paginated feed
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Title style={styles.title}>Feed</Title>
+      <FlatList
+        data={loading && posts.length === 0 ? SKELETON_POSTS : posts}
+        keyExtractor={(item: any) => item.postId || item._id || item.id || String(item.date)}
+        renderItem={({ item }: any) => (
+          item.__skeleton ? <FeedPostSkeleton /> : <PostCard post={item} />
+        )}
+        contentContainerStyle={styles.listContent}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.5}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListEmptyComponent={!loading && posts.length === 0 ? <View style={styles.center}><Title>No posts yet</Title></View> : null}
+      />
+    </SafeAreaView>
+  );
+}
+
+const SKELETON_POSTS = Array.from({ length: 5 }, (_, idx) => ({ id: `feed-skeleton-${idx}`, __skeleton: true }));
+
+function FeedPostSkeleton() {
+  return (
+    <View style={styles.skeletonCard}>
+      <View style={styles.skeletonHeader}>
+        <View style={styles.skeletonAvatar} />
+        <View style={styles.skeletonHeaderTextWrap}>
+          <View style={styles.skeletonName} />
+          <View style={styles.skeletonTime} />
+        </View>
+      </View>
+      <View style={styles.skeletonCaption} />
+      <View style={styles.skeletonImage} />
+      <View style={styles.skeletonActions}>
+        <View style={styles.skeletonActionLeft}>
+          <View style={styles.skeletonIcon} />
+          <View style={styles.skeletonCount} />
+        </View>
+        <View style={styles.skeletonActionLeft}>
+          <View style={styles.skeletonIcon} />
+          <View style={styles.skeletonCount} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, paddingTop: 32 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  title: { paddingHorizontal: 12, marginBottom: 14 },
+  listContent: { paddingTop: 2, paddingBottom: 10 },
+  skeletonCard: { marginHorizontal: 12, marginVertical: 8, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden' },
+  skeletonHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingTop: 12, paddingBottom: 10 },
+  skeletonAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#e5e7eb' },
+  skeletonHeaderTextWrap: { marginLeft: 10, flex: 1 },
+  skeletonName: { width: 120, height: 14, borderRadius: 4, backgroundColor: '#e5e7eb', marginBottom: 6 },
+  skeletonTime: { width: 70, height: 12, borderRadius: 4, backgroundColor: '#e5e7eb' },
+  skeletonCaption: { marginHorizontal: 12, marginBottom: 10, height: 14, borderRadius: 4, backgroundColor: '#e5e7eb' },
+  skeletonImage: { width: '100%', height: 240, backgroundColor: '#e5e7eb' },
+  skeletonActions: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 8, paddingVertical: 8 },
+  skeletonActionLeft: { flexDirection: 'row', alignItems: 'center' },
+  skeletonIcon: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#e5e7eb' },
+  skeletonCount: { width: 18, height: 12, borderRadius: 4, backgroundColor: '#e5e7eb', marginLeft: 6 },
+});

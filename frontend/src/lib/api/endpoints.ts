@@ -1,0 +1,42 @@
+export const endpoints = {
+  auth: {
+    login: '/api/login',
+    register: '/api/register',
+    logout: '/api/logout',
+    token: '/api/token',
+    forgotPassword: '/api/reset/password/search',
+    verifyCode: '/api/reset/password/final',
+    resetPassword: '/api/reset/password/change',
+  },
+  posts: {
+    list: '/api/posts',
+    create: '/api/posts/create',
+    get: (id: string) => `/api/posts/get/${id}`,
+    edit: (userId: string, postId: string) => `/api/posts/${userId}/${postId}`,
+    delete: (userId: string, postId: string) => `/api/posts/${userId}/${postId}`,
+    like: (userId: string, postId: string) => `/api/like/${userId}/${postId}`,
+    unlike: (userId: string, postId: string) => `/api/unlike/${userId}/${postId}`,
+  },
+  comments: {
+    list: (userId: string, postId: string) => `/api/comment/${userId}/${postId}`,
+    create: (userId: string, postId: string) => `/api/comment/${userId}/${postId}`,
+    edit: (userId: string, postId: string, commentId: string) => `/api/comment/${userId}/${postId}/${commentId}`,
+    delete: (userId: string, postId: string, commentId: string) => `/api/comment/${userId}/${postId}/${commentId}`,
+  },
+  users: {
+    profile: (userId: string) => `/api/users/${userId}`,
+    me: '/api/users/me',
+    edit: '/api/users/profile/edit',
+    profilePicture: '/api/users/profile/picture',
+    follow: (userId: string) => `/api/follow/${userId}`,
+    unfollow: (userId: string) => `/api/unfollow/${userId}`,
+    followers: (userId: string) => `/api/followers/${userId}`,
+    following: (userId: string) => `/api/following/${userId}`,
+  },
+  search: {
+    users: '/api/search',
+    posts: '/api/search',
+  },
+  suggestions: '/api/suggestions/suggestions',
+  feed: '/api/feed',
+};
